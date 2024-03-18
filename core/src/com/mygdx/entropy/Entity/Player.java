@@ -72,7 +72,7 @@ public class Player extends Sprite implements InputProcessor {
                 .getTile().getProperties().containsKey("blocked");
         } else if (velocity.y > 0) { // Up
             // Top side
-            collisionY = collisionLayer.getCell((int) ((getX() + getWidth() / 2) / tiledWidth), (int) ((getY() + getHeight() - 12) / tiledHeight))
+            collisionY = collisionLayer.getCell((int) ((getX() + getWidth() / 2) / tiledWidth), (int) ((getY() + getHeight() - 8) / tiledHeight))
                 .getTile().getProperties().containsKey("blocked");
         }
         

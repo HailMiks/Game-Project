@@ -24,8 +24,7 @@ public class GameScreen implements Screen {
     float zoom = 0.35f;
 
     private TiledMap map;
-    OrthogonalTiledMapRenderer renderer;
-
+    private OrthogonalTiledMapRenderer renderer;
     private Player player;
 
     @Override
@@ -40,7 +39,7 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
         renderer.getBatch().begin();
         player.update(delta); // Update player's position based on its velocity
-        player.draw(renderer.getBatch()); // Draw the player sprite
+        player.draw(renderer.getBatch()); // Draw the player
         renderer.getBatch().end();
     }
 
@@ -55,7 +54,7 @@ public class GameScreen implements Screen {
         camera.zoom = zoom; 
 
         player = new Player(new Sprite(new Texture("down_walk.png")), (TiledMapTileLayer) map.getLayers().get(0));
-        player.setPosition(1 * player.getCollisionLayer().getTileWidth(), 1 * player.getCollisionLayer().getTileHeight());
+        player.setPosition(2 * player.getCollisionLayer().getTileWidth(), 1 * player.getCollisionLayer().getTileHeight());
 
         Gdx.input.setInputProcessor(player);
     }
