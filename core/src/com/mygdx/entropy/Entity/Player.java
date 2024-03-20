@@ -7,13 +7,14 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 
 public class Player extends Sprite implements InputProcessor {
     
     // Movement velocity
     private Vector2 velocity = new Vector2();
  
-    private float speed = 50.0f; 
+    private float speed = 50.0f, increment; 
     private TiledMapTileLayer collisionLayer;
 
     private boolean leftPressed;
@@ -21,9 +22,12 @@ public class Player extends Sprite implements InputProcessor {
     private boolean upPressed;
     private boolean downPressed;
 
+    private String blockedKey = "blocked";
+
     public Player(Sprite sprite, TiledMapTileLayer collisionLayer) {
         super(sprite);
         this.collisionLayer = collisionLayer;
+        setSize(16, 16);
 
         velocity.set(0, 0);
         leftPressed = false;
@@ -39,22 +43,20 @@ public class Player extends Sprite implements InputProcessor {
     public void update(float delta) {
 
         // Old position
-        float oldX = getX(), oldY = getY(), tiledWidth = collisionLayer.getTileWidth(), tiledHeight = collisionLayer.getTileHeight();
+        float oldX = getX(), oldY = getY();
         boolean collisionX = false, collisionY = false;
 
         // X position
         setX(getX() + velocity.x * delta);
 
-        // Horizontal collision detection
-        if (velocity.x < 0) { // Left
-            // Left side
-            collisionX = collisionLayer.getCell((int) ((getX() + 4) / tiledWidth), (int) ((getY() + getHeight() / 2) / tiledHeight))
-                .getTile().getProperties().containsKey("blocked");
-        } else if (velocity.x > 0) { // Right
-            // Right side
-            collisionX = collisionLayer.getCell((int) ((getX() + getWidth() - 4) / tiledWidth), (int) ((getY() + getHeight() / 2) / tiledHeight))
-                .getTile().getProperties().containsKey("blocked");
-        }
+        // calculate the increment for step in #collidesLeft() and #collidesRight()
+        increment = collisionLayer.getTileWidth();
+        increment = getWidth() < increment ? getWidth() / 2 : increment / 2;
+
+        if(velocity.x < 0) // going left
+            collisionX = collidesLeft();
+        else if(velocity.x > 0) // going right
+            collisionX = collidesRight();
 
         // React to Collision on X
         if(collisionX) {
@@ -65,16 +67,13 @@ public class Player extends Sprite implements InputProcessor {
         // Y position
         setY(getY() + velocity.y * delta);
         
-        // Vertical collision detection
-        if (velocity.y < 0) { // Down
-            // Bottom side
-            collisionY = collisionLayer.getCell((int) ((getX() + getWidth() / 2) / tiledWidth), (int) (getY() / tiledHeight))
-                .getTile().getProperties().containsKey("blocked");
-        } else if (velocity.y > 0) { // Up
-            // Top side
-            collisionY = collisionLayer.getCell((int) ((getX() + getWidth() / 2) / tiledWidth), (int) ((getY() + getHeight() - 8) / tiledHeight))
-                .getTile().getProperties().containsKey("blocked");
-        }
+		increment = collisionLayer.getTileHeight();
+		increment = getHeight() < increment ? getHeight() / 2 : increment / 2;
+
+		if(velocity.y < 0) // going down
+			collisionY = collidesBottom();
+		else if(velocity.y > 0) // going up
+			collisionY = collidesTop();
         
         // React to Collision on Y
         if(collisionY) {
@@ -82,6 +81,44 @@ public class Player extends Sprite implements InputProcessor {
             velocity.y = 0;
         }
     }
+
+    private boolean isCollision(float x, float y) {
+		Cell cell = collisionLayer.getCell((int) (x / collisionLayer.getTileWidth()), (int) (y / collisionLayer.getTileHeight()));
+		return cell != null && cell.getTile() != null && cell.getTile().getProperties().containsKey(blockedKey);
+	}
+
+    public boolean collidesRight() {
+        for (float step = 0; step <= getHeight(); step += increment) {
+            if (isCollision(getX() + getWidth(), getY() + step)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean collidesLeft() {
+        for (float step = 0; step <= getHeight(); step += increment) {
+            if (isCollision(getX(), getY() + step)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+	public boolean collidesTop() {
+		for(float step = 0; step <= getWidth(); step += increment)
+			if(isCollision(getX() + step, getY() + getHeight()))
+				return true;
+		return false;
+
+	}
+
+    public boolean collidesBottom() {
+		for(float step = 0; step <= getWidth(); step += increment)
+			if(isCollision(getX() + step, getY()))
+				return true;
+		return false;
+	}
 
     public Vector2 getVelocity() {
         return velocity;
