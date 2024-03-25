@@ -25,6 +25,8 @@ public class ContactListen implements ContactListener {
             Fixture enemyFixture = fa.getUserData() instanceof Enemy ? fa : fb;
             Enemy enemy = (Enemy) enemyFixture.getUserData();
             enemy.getBody().setLinearDamping(500f); // Heaviness
+
+            System.out.println("OUCH!");
         }
     }
 
