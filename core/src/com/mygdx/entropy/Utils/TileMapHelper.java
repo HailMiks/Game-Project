@@ -14,6 +14,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.mygdx.entropy.GScreen;
+import com.mygdx.entropy.Objects.Enemies.Enemy;
 import com.mygdx.entropy.Objects.Player.Player;
 
 public class TileMapHelper {
@@ -53,6 +54,18 @@ public class TileMapHelper {
                     );
                     gameScreen.setPlayer(new Player(rectangle.getWidth(), rectangle.getHeight(), body));
                 }
+
+                if(rectangleName.equals("Enemy")) {
+                    Body body = BodyHelperService.createBody(
+                        rectangle.getX() + rectangle.getWidth() / 2,
+                        rectangle.getY() + rectangle.getHeight() / 2,
+                        rectangle.getWidth(),
+                        rectangle.getHeight(),
+                        false,
+                        gameScreen.getWorld()
+                    );
+                    gameScreen.setEnemy(new Enemy(rectangle.getWidth(), rectangle.getHeight(), body));
+                }
             } 
         }
     }
@@ -62,7 +75,7 @@ public class TileMapHelper {
         bodyDef.type = BodyDef.BodyType.StaticBody;
         Body body = gameScreen.getWorld().createBody(bodyDef);
         Shape shape = createPolygonShape(polygonMapObject);
-        body.createFixture(shape, 1000);
+        body.createFixture(shape, 1f);
         shape.dispose();
     }
 

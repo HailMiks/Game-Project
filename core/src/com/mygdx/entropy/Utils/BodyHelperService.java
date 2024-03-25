@@ -20,7 +20,8 @@ public class BodyHelperService {
         
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.friction = 0;
+        fixtureDef.friction = 0f;
+        
         body.createFixture(fixtureDef);
         shape.dispose();
         return body;

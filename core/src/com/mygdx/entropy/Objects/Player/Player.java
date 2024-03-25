@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.mygdx.entropy.Objects.GameEntity;
 import com.mygdx.entropy.Utils.Constants;
 
 public class Player extends GameEntity {
@@ -22,9 +23,14 @@ public class Player extends GameEntity {
     private Animation<TextureRegion> upStill, downStill, leftStill, rightStill, walkUp, walkDown, walkLeft, walkRight;
     private Direction lastDirection = Direction.DOWN;
 
+    public static Body body;
+
     public Player(float width, float height, Body body) {
         super(width, height, body);
         this.speed = 2.5f;
+        this.body = body;
+        
+        // Animation
         this.atlas = new TextureAtlas("player/lumianMove.atlas");
         this.walkUp = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("up_walk"));
         this.walkDown = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("down_walk"));
@@ -34,8 +40,11 @@ public class Player extends GameEntity {
         this.downStill = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("down_still"));
         this.leftStill = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("left_still"));
         this.rightStill = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("right_still"));
-    
+        
+        // Audio
         footsteps = Gdx.audio.newSound(Gdx.files.internal("audio/walkSFX.mp3"));
+        
+        body.getFixtureList().first().setUserData(this);
     }
 
     public enum Direction {
@@ -156,13 +165,13 @@ public class Player extends GameEntity {
         velX = 0;
         velY = 0;
         if(Gdx.input.isKeyPressed(Input.Keys.D))
-         velX = 1;
+            velX = 1;
         if(Gdx.input.isKeyPressed(Input.Keys.A))
-         velX = -1;
+            velX = -1;
         if(Gdx.input.isKeyPressed(Input.Keys.W))
-         velY = 1;
+            velY = 1;
         if(Gdx.input.isKeyPressed(Input.Keys.S))
-         velY = -1;
+            velY = -1;
 
 
         if (velX > 0)
@@ -174,10 +183,11 @@ public class Player extends GameEntity {
         else if (velY < 0)
             lastDirection = Direction.DOWN;
         body.setLinearVelocity(velX * speed, velY * speed);
+
     }
 
     public void dispose() {
         atlas.dispose();
-        footsteps.dispose();        
+        footsteps.dispose();   
     }
 }
