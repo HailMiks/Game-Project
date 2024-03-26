@@ -57,7 +57,7 @@ public class GScreen extends ScreenAdapter {
         this.world = new World(new Vector2(0, 0), false);
         this.world.setContactListener(new ContactListen());
         this.box2dDebugRenderer = new Box2DDebugRenderer(
-            true,
+            false,
             false,
             false,
             true,
@@ -124,6 +124,8 @@ public class GScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         orthogonalTiledMapRenderer.render();
+
+        PointLight light2 = new PointLight(rayHandler, 64, new Color(1, 0.8f, 0.15f, 0.3f), 0.5f, 3.75f, 2.3f);
 
         this.batch.begin();
         // render the objects
