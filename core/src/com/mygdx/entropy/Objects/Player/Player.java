@@ -27,7 +27,7 @@ public class Player extends GameEntity {
 
     public Player(float width, float height, Body body) {
         super(width, height, body);
-        this.speed = 2.5f;
+        this.speed = 2f;
         this.body = body;
         
         // Animation
@@ -64,30 +64,24 @@ public class Player extends GameEntity {
 
         // Check the direction of movement
         if (isMoving) {
-            if (velX > 0) {
-                lastDirection = Direction.RIGHT;
-                if (!footstepPlaying) {
-                    footstepsId = footsteps.loop(0.4f, 0.8f, 0);
-                    footstepPlaying = true;
+            if (Math.abs(velX) > Math.abs(velY)) {
+                if (velX > 0) {
+                    lastDirection = Direction.RIGHT;
+                } else {
+                    lastDirection = Direction.LEFT;
                 }
-            } else if (velX < 0) {
-                lastDirection = Direction.LEFT;
-                if (!footstepPlaying) {
-                    footstepsId = footsteps.loop(0.4f, 0.8f, 0);
-                    footstepPlaying = true;
+            } else {
+                if (velY > 0) {
+                    lastDirection = Direction.UP;
+                } else {
+                    lastDirection = Direction.DOWN;
                 }
-            } else if (velY > 0) {
-                lastDirection = Direction.UP;
-                if (!footstepPlaying) {
-                    footstepsId = footsteps.loop(0.4f, 0.8f, 0);
-                    footstepPlaying = true;
-                }
-            } else if (velY < 0) {
-                lastDirection = Direction.DOWN;
-                if (!footstepPlaying) {
-                    footstepsId = footsteps.loop(0.4f, 0.8f, 0);
-                    footstepPlaying = true;
-                }
+            }
+
+            // Play footstep sound if not already playing
+            if (!footstepPlaying) {
+                footstepsId = footsteps.loop(0.6f, 0.8f, 0);
+                footstepPlaying = true;
             }
         } else {
             // Stop footstep sound if the player is not moving

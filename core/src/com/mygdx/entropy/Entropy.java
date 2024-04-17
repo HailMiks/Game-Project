@@ -5,6 +5,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.entropy.Screens.GScreen;
+import com.mygdx.entropy.Screens.SplashScreen;
 
 public class Entropy extends Game {
 	SpriteBatch batch;
@@ -25,5 +27,12 @@ public class Entropy extends Game {
 		this.camera = new OrthographicCamera();
 		this.camera.setToOrtho(false, widthScreen, heightScreen);
 		setScreen(new GScreen(camera));	
+		// setScreen(new SplashScreen(this));	
 	}
+
+	@Override
+	public void dispose () {
+        batch.dispose();
+        img.dispose();
+    }
 }

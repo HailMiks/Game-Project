@@ -1,7 +1,8 @@
-package com.mygdx.entropy;
+package com.mygdx.entropy.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -25,6 +26,7 @@ import box2dLight.RayHandler;
 
 import com.mygdx.entropy.Objects.Enemies.Enemy;
 import com.mygdx.entropy.Objects.Player.Player;
+import com.mygdx.entropy.Objects.Items.Item;
 
 public class GScreen extends ScreenAdapter {
 
@@ -46,6 +48,7 @@ public class GScreen extends ScreenAdapter {
     // Game Objects
     private Player player;
     private Enemy enemy;
+    private Item item;
     private PointLight light; 
 
     public GScreen(OrthographicCamera camera) {
@@ -57,7 +60,7 @@ public class GScreen extends ScreenAdapter {
         this.world = new World(new Vector2(0, 0), false);
         this.world.setContactListener(new ContactListen());
         this.box2dDebugRenderer = new Box2DDebugRenderer(
-            false,
+            true,
             false,
             false,
             true,
@@ -124,8 +127,10 @@ public class GScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         orthogonalTiledMapRenderer.render();
-
-        PointLight light2 = new PointLight(rayHandler, 64, new Color(1, 0.8f, 0.15f, 0.3f), 0.5f, 3.75f, 2.3f);
+        
+        if (renderDebug) { 
+            box2dDebugRenderer.render(world, camera.combined.scl(Constants.PPM));
+        }
 
         this.batch.begin();
         // render the objects
@@ -146,15 +151,10 @@ public class GScreen extends ScreenAdapter {
             player.getBody().getPosition().y * Constants.PPM - (playerAnimation.getRegionHeight() - 28 / 2));
 
         this.batch.end();
-
-        if (renderDebug) { 
-            box2dDebugRenderer.render(world, camera.combined.scl(Constants.PPM));
-        }
         
         rayHandler.setCombinedMatrix(camera);
         rayHandler.updateAndRender();
     }
-
 
     public TextureAtlas getAtlas() {
         return atlas;
@@ -170,6 +170,10 @@ public class GScreen extends ScreenAdapter {
 
     public void setEnemy(Enemy enemy) {
         this.enemy = enemy;
+    } 
+
+    public void setItem(Item item) {
+        this.item = item;
     } 
 
     private void initLight() {
@@ -202,5 +206,7 @@ public class GScreen extends ScreenAdapter {
         light.dispose();
         player.dispose();
         enemy.dispose();
+        item.dispose();
+        super.dispose();    
     }
 }
