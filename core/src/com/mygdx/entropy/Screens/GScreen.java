@@ -60,7 +60,7 @@ public class GScreen extends ScreenAdapter {
         this.world = new World(new Vector2(0, 0), false);
         this.world.setContactListener(new ContactListen());
         this.box2dDebugRenderer = new Box2DDebugRenderer(
-            true,
+            false,
             false,
             false,
             true,
@@ -68,7 +68,7 @@ public class GScreen extends ScreenAdapter {
             false);
 
         rayHandler = new RayHandler(world);
-        rayHandler.setAmbientLight(0.1f, 0.1f, 0.1f, 1f);
+        rayHandler.setAmbientLight(0f, 0f, 0f, 1f);
         rayHandler.setBlurNum(3);
         RayHandler.useDiffuseLight(true);
         rayHandler.setCulling(false);
@@ -181,7 +181,7 @@ public class GScreen extends ScreenAdapter {
         light.attachToBody(player.getBody());
         light.setStaticLight(false);
         light.setSoftnessLength(2);
-        light.setDistance(3);
+        light.setDistance(2);
         light.setSoft(true);
     }
 
