@@ -1,5 +1,7 @@
 package com.mygdx.entropy.Objects.Player;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
@@ -9,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.mygdx.entropy.Objects.GameEntity;
+import com.mygdx.entropy.Objects.Items.Esuba;
 import com.mygdx.entropy.Utils.Constants;
 
 public class Player extends GameEntity {
@@ -25,9 +28,11 @@ public class Player extends GameEntity {
 
     public static Body body;
 
+    private ArrayList<Esuba> inventory;
+
     public Player(float width, float height, Body body) {
         super(width, height, body);
-        this.speed = 2f;
+        this.speed = 1.8f;
         this.body = body;
         
         // Animation
@@ -41,10 +46,25 @@ public class Player extends GameEntity {
         this.leftStill = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("left_still"));
         this.rightStill = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("right_still"));
         
+        // Inventory
+        inventory = new ArrayList<>(); 
+
         // Audio
         footsteps = Gdx.audio.newSound(Gdx.files.internal("audio/walkSFX.mp3"));
         
         body.getFixtureList().first().setUserData(this);
+    }
+
+    public void addItem(Esuba item) {
+        inventory.add(item);
+    }
+    
+    public void removeItem(Esuba item) {
+        inventory.remove(item); 
+    }
+    
+    public ArrayList<Esuba> getInventory() {
+        return inventory;
     }
 
     public enum Direction {

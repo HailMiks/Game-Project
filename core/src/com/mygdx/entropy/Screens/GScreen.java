@@ -16,6 +16,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.entropy.Utils.Constants;
 import com.mygdx.entropy.Utils.ContactListen;
@@ -26,7 +27,13 @@ import box2dLight.RayHandler;
 
 import com.mygdx.entropy.Objects.Enemies.Enemy;
 import com.mygdx.entropy.Objects.Player.Player;
-import com.mygdx.entropy.Objects.Items.Item;
+import com.mygdx.entropy.Objects.Items.Button;
+import com.mygdx.entropy.Objects.Items.Crayons;
+import com.mygdx.entropy.Objects.Items.Crow;
+import com.mygdx.entropy.Objects.Items.Esuba;
+import com.mygdx.entropy.Objects.Items.Needle;
+import com.mygdx.entropy.Objects.Items.PictureFrame;
+import com.mygdx.entropy.Objects.Items.Threads;
 
 public class GScreen extends ScreenAdapter {
 
@@ -39,6 +46,7 @@ public class GScreen extends ScreenAdapter {
     private Box2DDebugRenderer box2dDebugRenderer;
     private RayHandler rayHandler;
     private boolean renderDebug = true;
+    ContactListen contactListener;
 
     private OrthogonalTiledMapRenderer orthogonalTiledMapRenderer;
     private TileMapHelper tileMapHelper;
@@ -48,19 +56,28 @@ public class GScreen extends ScreenAdapter {
     // Game Objects
     private Player player;
     private Enemy enemy;
-    private Item item;
-    private PointLight light; 
+    private Esuba esuba;
+    private Needle needle;
+    private Button button;
+    private Crayons crayons;
+    private PictureFrame pictureFrame;
+    private Threads threads;
+    private Crow crow;
+
+    private PointLight light;
 
     public GScreen(OrthographicCamera camera) {
 
         this.camera = camera;
         this.batch = new SpriteBatch();
         
+        this.contactListener = new ContactListen();
+
         // Box2D
         this.world = new World(new Vector2(0, 0), false);
-        this.world.setContactListener(new ContactListen());
+        this.world.setContactListener(contactListener);
         this.box2dDebugRenderer = new Box2DDebugRenderer(
-            false,
+            true,
             false,
             false,
             true,
@@ -132,6 +149,23 @@ public class GScreen extends ScreenAdapter {
             box2dDebugRenderer.render(world, camera.combined.scl(Constants.PPM));
         }
 
+        if(contactListener.pickItem && Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            System.out.println("Interacted!");
+        } else if(contactListener.pickNeedle && Gdx.input.isKeyJustPressed(Input.Keys.E)){
+            System.out.println("Need");
+        } else if(contactListener.pickButton && Gdx.input.isKeyJustPressed(Input.Keys.E)){
+            System.out.println("But!");
+        } else if(contactListener.pickCrow && Gdx.input.isKeyJustPressed(Input.Keys.E)){
+            System.out.println("Crow!");
+        } else if(contactListener.pickThreads && Gdx.input.isKeyJustPressed(Input.Keys.E)){
+            System.out.println("Crow!");
+        } else if(contactListener.pickCrow && Gdx.input.isKeyJustPressed(Input.Keys.E)){
+            System.out.println("Crow!");
+        } else if(contactListener.pickCrow && Gdx.input.isKeyJustPressed(Input.Keys.E)){
+            System.out.println("Crow!");
+        }
+        
+
         this.batch.begin();
         // render the objects
         TextureRegion playerAnimation = player.getCurrentFrame();
@@ -172,8 +206,32 @@ public class GScreen extends ScreenAdapter {
         this.enemy = enemy;
     } 
 
-    public void setItem(Item item) {
-        this.item = item;
+    public void setEsuba(Esuba esuba) {
+        this.esuba = esuba;
+    } 
+
+    public void setCrow(Crow crow) {
+        this.crow = crow;
+    } 
+
+    public void setThreads(Threads threads) {
+        this.threads = threads;
+    } 
+
+    public void setPicture(PictureFrame picture) {
+        this.pictureFrame = picture;
+    } 
+
+    public void setCrayons(Crayons crayons) {
+        this.crayons = crayons;
+    } 
+
+    public void setNeedle(Needle needle) {
+        this.needle = needle;
+    } 
+
+    public void setButton(Button button) {
+        this.button = button;
     } 
 
     private void initLight() {
@@ -206,7 +264,14 @@ public class GScreen extends ScreenAdapter {
         light.dispose();
         player.dispose();
         enemy.dispose();
-        item.dispose();
+        esuba.dispose();
+        needle.dispose();
+        crow.dispose();
+        threads.dispose();
+        pictureFrame.dispose();
+        crayons.dispose();
+        button.dispose();
+        lightSound.dispose();
         super.dispose();    
     }
 }
