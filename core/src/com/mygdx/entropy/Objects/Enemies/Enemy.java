@@ -15,13 +15,19 @@ public class Enemy extends GameEntity {
     private TextureAtlas atlas;
     private Animation<TextureRegion> idle;
     private float elapsedTime;
+    enum State { ROAMING, CHASING }
+    State state;
+    
+    private float speed;
+    private float chaseRadius;
 
     public static Body body;
 
-    public Enemy(float width, float height, Body body) {
+    public Enemy(float width, float height, Body body, float speed, float chaseRadius) {
         super(width, height, body);
         this.speed = 0f;
         this.body = body;
+        this.chaseRadius = chaseRadius;
 
         // Animation
         this.atlas = new TextureAtlas("player/shadow.atlas");

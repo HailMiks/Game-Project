@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.mygdx.entropy.Objects.GameEntity;
+import com.mygdx.entropy.Objects.Items.Crow;
 import com.mygdx.entropy.Objects.Items.Esuba;
 import com.mygdx.entropy.Utils.Constants;
 
@@ -26,9 +28,9 @@ public class Player extends GameEntity {
     private Animation<TextureRegion> upStill, downStill, leftStill, rightStill, walkUp, walkDown, walkLeft, walkRight;
     private Direction lastDirection = Direction.DOWN;
 
-    public static Body body;
+    public ArrayList<String> inventory;
 
-    private ArrayList<Esuba> inventory;
+    public static Body body;
 
     public Player(float width, float height, Body body) {
         super(width, height, body);
@@ -45,26 +47,13 @@ public class Player extends GameEntity {
         this.downStill = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("down_still"));
         this.leftStill = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("left_still"));
         this.rightStill = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("right_still"));
-        
-        // Inventory
-        inventory = new ArrayList<>(); 
+
+        inventory = new ArrayList<>();
 
         // Audio
         footsteps = Gdx.audio.newSound(Gdx.files.internal("audio/walkSFX.mp3"));
         
         body.getFixtureList().first().setUserData(this);
-    }
-
-    public void addItem(Esuba item) {
-        inventory.add(item);
-    }
-    
-    public void removeItem(Esuba item) {
-        inventory.remove(item); 
-    }
-    
-    public ArrayList<Esuba> getInventory() {
-        return inventory;
     }
 
     public enum Direction {
@@ -127,7 +116,7 @@ public class Player extends GameEntity {
             currentFrame = walkDown.getKeyFrame(elapsedTime, true);
         else {
             switch (lastDirection) {
-                 // Use the first frame for the direction
+                // Use the first frame for the direction
                 case UP:
                     currentFrame = upStill.getKeyFrame(0);
                     break;
@@ -143,10 +132,22 @@ public class Player extends GameEntity {
                 default:
                     currentFrame = downStill.getKeyFrame(0, true); 
             }
-        }
-            
+        }        
 
         batch.draw(currentFrame, x, y);
+
+    }
+
+    public void addItem(String itemName) {
+        inventory.add(itemName);
+    }
+    
+    public void removeItem(String itemName) {
+        inventory.remove(itemName);
+    }
+
+    public ArrayList<String> getInventory() {
+        return inventory;
     }
 
     public TextureRegion getCurrentFrame() {
@@ -178,13 +179,13 @@ public class Player extends GameEntity {
     private void checkUserInput() {
         velX = 0;
         velY = 0;
-        if(Gdx.input.isKeyPressed(Input.Keys.D))
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D))
             velX = 1;
-        if(Gdx.input.isKeyPressed(Input.Keys.A))
+        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A))
             velX = -1;
-        if(Gdx.input.isKeyPressed(Input.Keys.W))
+        if(Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W))
             velY = 1;
-        if(Gdx.input.isKeyPressed(Input.Keys.S))
+        if(Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S))
             velY = -1;
 
 

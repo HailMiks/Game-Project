@@ -19,7 +19,7 @@ import com.mygdx.entropy.Objects.Player.Player;
 
 public class ContactListen implements ContactListener {
 
-    public boolean pickItem = false;
+    public boolean esubaInteract = false;
     public boolean pickNeedle = false;
     public boolean pickButton = false;
     public boolean pickCrow = false;
@@ -55,8 +55,8 @@ public class ContactListen implements ContactListener {
             System.out.println(fa.getUserData());
             System.out.println(fb.getUserData());
 
-            pickItem = true;
-            System.out.println(pickItem);
+            esubaInteract = true;
+            System.out.println(esubaInteract);
         }
 
         if ((fa.getUserData() instanceof Player && fb.getUserData() instanceof Needle) ||
@@ -152,7 +152,7 @@ public class ContactListen implements ContactListener {
 
     @Override
     public void endContact(Contact contact) {
-        pickItem = false;
+        esubaInteract = false;
         pickNeedle = false;
         pickButton = false;
         pickCrow = false;

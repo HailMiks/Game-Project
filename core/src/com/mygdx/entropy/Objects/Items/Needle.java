@@ -1,6 +1,9 @@
 package com.mygdx.entropy.Objects.Items;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.mygdx.entropy.Objects.GameEntity;
@@ -8,10 +11,17 @@ import static com.mygdx.entropy.Utils.Constants.PPM;
 
 public class Needle extends GameEntity {
 
+    private TextureAtlas atlas;
+    
     public Body body;
+
+    private AtlasRegion needle;
 
     public Needle(float width, float height, Body body) {
         super(width, height, body);
+        
+        this.atlas = new TextureAtlas("items/item.atlas");
+        this.needle = atlas.findRegion("needleItem"); 
         
         Fixture fixture = body.getFixtureList().first();
         fixture.setUserData(this);
@@ -28,6 +38,12 @@ public class Needle extends GameEntity {
     public void render(SpriteBatch batch) {     
     }
 
+    public TextureRegion getTexture() {
+        return needle;
+    }
+
     public void dispose() {  
+        atlas.dispose();
+        needle.getTexture().dispose();
     }
 }

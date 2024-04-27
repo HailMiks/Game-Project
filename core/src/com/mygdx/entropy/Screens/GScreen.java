@@ -1,5 +1,7 @@
 package com.mygdx.entropy.Screens;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -9,12 +11,14 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.World;
@@ -37,21 +41,23 @@ import com.mygdx.entropy.Objects.Items.Threads;
 
 public class GScreen extends ScreenAdapter {
 
-    private OrthographicCamera camera;
-    private SpriteBatch batch;
-    private Music music;
-    private Sound lightSound;
-
+    // Box2D
     private World world;
     private Box2DDebugRenderer box2dDebugRenderer;
     private RayHandler rayHandler;
     private boolean renderDebug = true;
     ContactListen contactListener;
 
+    // Assets and Map
     private OrthogonalTiledMapRenderer orthogonalTiledMapRenderer;
     private TileMapHelper tileMapHelper;
-
     private TextureAtlas atlas;
+    private OrthographicCamera camera;
+    private SpriteBatch batch;
+    private Music music;
+    private Sound lightSound, grab;
+    private PointLight light;
+    private Texture crowInv, buttonInv, needleInv, crayonsInv, threadsInv, pictureFrameInv;
 
     // Game Objects
     private Player player;
@@ -64,8 +70,6 @@ public class GScreen extends ScreenAdapter {
     private Threads threads;
     private Crow crow;
 
-    private PointLight light;
-
     public GScreen(OrthographicCamera camera) {
 
         this.camera = camera;
@@ -73,11 +77,19 @@ public class GScreen extends ScreenAdapter {
         
         this.contactListener = new ContactListen();
 
+        // Items
+        crowInv = new Texture("crow.png");
+        buttonInv = new Texture("button.png");
+        crayonsInv = new Texture("crayons.png");
+        needleInv = new Texture("needle.png");
+        pictureFrameInv = new Texture("picture.png");
+        threadsInv = new Texture("thread.png");
+
         // Box2D
         this.world = new World(new Vector2(0, 0), false);
         this.world.setContactListener(contactListener);
         this.box2dDebugRenderer = new Box2DDebugRenderer(
-            true,
+            false,
             false,
             false,
             true,
@@ -99,6 +111,7 @@ public class GScreen extends ScreenAdapter {
         // Audio
         this.music = Gdx.audio.newMusic(Gdx.files.internal("audio/music_box.wav"));
         lightSound = Gdx.audio.newSound(Gdx.files.internal("audio/matchStick.mp3"));
+        grab = Gdx.audio.newSound(Gdx.files.internal("audio/grab.mp3"));
 
         music.setLooping(true);
         music.setVolume(0.5f);
@@ -149,29 +162,21 @@ public class GScreen extends ScreenAdapter {
             box2dDebugRenderer.render(world, camera.combined.scl(Constants.PPM));
         }
 
-        if(contactListener.pickItem && Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-            System.out.println("Interacted!");
-        } else if(contactListener.pickNeedle && Gdx.input.isKeyJustPressed(Input.Keys.E)){
-            System.out.println("Need");
-        } else if(contactListener.pickButton && Gdx.input.isKeyJustPressed(Input.Keys.E)){
-            System.out.println("But!");
-        } else if(contactListener.pickCrow && Gdx.input.isKeyJustPressed(Input.Keys.E)){
-            System.out.println("Crow!");
-        } else if(contactListener.pickThreads && Gdx.input.isKeyJustPressed(Input.Keys.E)){
-            System.out.println("Crow!");
-        } else if(contactListener.pickCrow && Gdx.input.isKeyJustPressed(Input.Keys.E)){
-            System.out.println("Crow!");
-        } else if(contactListener.pickCrow && Gdx.input.isKeyJustPressed(Input.Keys.E)){
-            System.out.println("Crow!");
-        }
-        
+        ArrayList<String> inventory = player.inventory;
+
+        handleItemInteraction();
 
         this.batch.begin();
         // render the objects
         TextureRegion playerAnimation = player.getCurrentFrame();
         TextureRegion enemyAnimation = enemy.getCurrentFrame();
+        float playerX = player.getBody().getPosition().x * Constants.PPM - (playerAnimation.getRegionWidth() / 2);
+        float playerY = player.getBody().getPosition().y * Constants.PPM - (playerAnimation.getRegionHeight() - 28 / 2);
+        float offSet = 65;
         float enemyScaleX = 0.15f;
         float enemyScaleY = 0.15f;
+
+        renderItems();
 
         batch.draw(enemyAnimation, 
             enemy.getBody().getPosition().x * Constants.PPM - (enemyAnimation.getRegionWidth() / 2), 
@@ -180,14 +185,170 @@ public class GScreen extends ScreenAdapter {
             enemyAnimation.getRegionWidth(), enemyAnimation.getRegionHeight(),
             enemyScaleX, enemyScaleY, 0);
 
-        batch.draw(playerAnimation, 
-            player.getBody().getPosition().x * Constants.PPM - (playerAnimation.getRegionWidth() / 2), 
-            player.getBody().getPosition().y * Constants.PPM - (playerAnimation.getRegionHeight() - 28 / 2));
+        batch.draw(playerAnimation, playerX, playerY);
+
+        int invWidth = inventory.size() * 20; 
+        float startX = playerX - invWidth/2 + 10;
+        int xOffset = 0;
 
         this.batch.end();
         
         rayHandler.setCombinedMatrix(camera);
         rayHandler.updateAndRender();
+
+        this.batch.begin();
+
+        for(String item : inventory) {
+
+            if(item.equals("Crow")) {
+                batch.draw(crowInv, startX + xOffset, playerY - offSet);
+                xOffset += 20; 
+            }
+            
+            else if(item.equals("Button")) {
+                batch.draw(buttonInv, startX + xOffset, playerY - offSet); 
+                xOffset += 20;
+            }
+            
+            else if(item.equals("Needle")) {
+                batch.draw(needleInv, startX + xOffset, playerY - offSet);
+                xOffset += 20;
+            }
+
+            else if(item.equals("Crayons")) {
+                batch.draw(crayonsInv, startX + xOffset, playerY - offSet);
+                xOffset += 20;
+            }
+
+            else if(item.equals("Threads")) {
+                batch.draw(threadsInv, startX + xOffset, playerY - offSet);
+                xOffset += 20;
+            }
+
+            else if(item.equals("Picture")) {
+                batch.draw(pictureFrameInv, startX + xOffset, playerY - offSet);
+                xOffset += 20;
+            }
+
+        }
+            
+        this.batch.end();
+
+    } 
+
+    private void handleItemInteraction() {
+        ArrayList<String> inventory = player.inventory;
+        if(Gdx.input.isKeyJustPressed(Input.Keys.E)){
+            if(contactListener.esubaInteract) {
+                if(inventory.size() == 0) {
+                    System.out.println("You must recall your memories");
+                    System.out.println("Find 6 Items that will help you remember...");
+                } else if(inventory.size() <= 5) {
+                    System.out.println("You have collected: " + inventory.size() + " items");
+                } else if(inventory.size() == 6) {
+                    System.out.println("You have collected: " + inventory.size() + " items");
+                    System.out.println("You remember everything... my child...");
+                }
+            } else if(contactListener.pickNeedle) {
+                handleItemPickup("Needle", needle.getBody());
+                grab.play(10f);
+            } else if(contactListener.pickButton) {
+                handleItemPickup("Button", button.getBody());
+                grab.play(10f);
+            } else if(contactListener.pickCrow) {
+                handleItemPickup("Crow", crow.getBody());
+                grab.play(10f);
+            } else if(contactListener.pickThreads) {
+                handleItemPickup("Threads", threads.getBody());
+                grab.play(10f);
+            } else if(contactListener.pickCrayons) {
+                handleItemPickup("Crayons", crayons.getBody());
+                grab.play(10f);
+            } else if(contactListener.pickPicture) {
+                handleItemPickup("Picture", pictureFrame.getBody());
+                grab.play(10f);
+            }
+        }
+    }
+
+    public void handleItemPickup(String itemName, Body itemBody) {
+        
+        player.inventory.add(itemName);
+        insertionSort(player.inventory); 
+        System.out.println("Added " + itemName + " to inventory");
+        System.out.println("Inventory: " + player.inventory);
+        world.destroyBody(itemBody);
+        
+        if (itemName.equals("Button")) {
+            button = null;
+        } else if (itemName.equals("Needle")) {
+            needle = null;
+        } else if (itemName.equals("Crow")) {
+            crow = null;
+        } else if (itemName.equals("Threads")) {
+            threads = null;
+        } else if (itemName.equals("Crayons")) {
+            crayons = null;
+        } else if (itemName.equals("Picture")) {
+            pictureFrame = null;
+        }
+    }
+
+    public static void insertionSort(ArrayList<String> inventory) {
+        int n = inventory.size();
+        for (int j = 1; j < n; j++) {
+            String key = inventory.get(j);
+            int i = j - 1;
+            while ((i > -1) && (inventory.get(i).compareTo(key) > 0)) {
+                inventory.set(i + 1, inventory.get(i));
+                i--;
+            }
+            inventory.set(i + 1, key);
+        }
+    }
+    
+    private void renderItems() {
+        if (button != null) {
+            TextureRegion buttonTexture = button.getTexture();
+            batch.draw(buttonTexture, 
+                button.getBody().getPosition().x * Constants.PPM - (buttonTexture.getRegionWidth() / 2), 
+                button.getBody().getPosition().y * Constants.PPM - (buttonTexture.getRegionHeight() / 2));
+        }
+
+        if (needle != null) {
+            TextureRegion needleTexture = needle.getTexture();
+            batch.draw(needleTexture, 
+                needle.getBody().getPosition().x * Constants.PPM - (needleTexture.getRegionWidth() / 2), 
+                needle.getBody().getPosition().y * Constants.PPM - (needleTexture.getRegionHeight() / 2));
+        }
+
+        if (crow != null) {
+            TextureRegion crowTexture = crow.getTexture();
+            batch.draw(crowTexture, 
+                crow.getBody().getPosition().x * Constants.PPM - (crowTexture.getRegionWidth() / 2), 
+                crow.getBody().getPosition().y * Constants.PPM - (crowTexture.getRegionHeight() / 2));
+        }
+
+        if (threads != null) {
+            TextureRegion threadsTexture = threads.getTexture();
+            batch.draw(threadsTexture, 
+                threads.getBody().getPosition().x * Constants.PPM - (threadsTexture.getRegionWidth() / 2), 
+                threads.getBody().getPosition().y * Constants.PPM - (threadsTexture.getRegionHeight() / 2));
+        }
+
+        if (crayons != null) {
+            TextureRegion crayonsTexture = crayons.getTexture();
+            batch.draw(crayonsTexture, 
+                crayons.getBody().getPosition().x * Constants.PPM - (crayonsTexture.getRegionWidth() / 2), 
+                crayons.getBody().getPosition().y * Constants.PPM - (crayonsTexture.getRegionHeight() / 2));
+        }
+
+        if (pictureFrame != null) {
+            TextureRegion pictureFrameTexture = pictureFrame.getTexture();
+            batch.draw(pictureFrameTexture, 
+                pictureFrame.getBody().getPosition().x * Constants.PPM - (pictureFrameTexture.getRegionWidth() / 2), 
+                pictureFrame.getBody().getPosition().y * Constants.PPM - (pictureFrameTexture.getRegionHeight() / 2));
+        }
     }
 
     public TextureAtlas getAtlas() {
@@ -257,6 +418,12 @@ public class GScreen extends ScreenAdapter {
         batch.dispose();
         box2dDebugRenderer.dispose();
         orthogonalTiledMapRenderer.dispose();
+        crowInv.dispose(); 
+        buttonInv.dispose(); 
+        needleInv.dispose(); 
+        crayonsInv.dispose(); 
+        threadsInv.dispose();
+        pictureFrameInv.dispose();
         world.dispose();
         music.dispose();
         atlas.dispose();
@@ -272,6 +439,7 @@ public class GScreen extends ScreenAdapter {
         crayons.dispose();
         button.dispose();
         lightSound.dispose();
+        grab.dispose();
         super.dispose();    
     }
 }
