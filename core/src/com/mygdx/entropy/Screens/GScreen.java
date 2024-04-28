@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -19,9 +18,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.entropy.Utils.Constants;
 import com.mygdx.entropy.Utils.ContactListen;
@@ -90,7 +87,7 @@ public class GScreen extends ScreenAdapter {
         this.world = new World(new Vector2(0, 0), false);
         this.world.setContactListener(contactListener);
         this.box2dDebugRenderer = new Box2DDebugRenderer(
-            false,
+            true,
             false,
             false,
             true,
@@ -102,12 +99,16 @@ public class GScreen extends ScreenAdapter {
         rayHandler.setBlurNum(3);
         RayHandler.useDiffuseLight(true);
         rayHandler.setCulling(false);
-        rayHandler.setShadows(true);
+        rayHandler.setShadows(false);
 
         this.tileMapHelper = new TileMapHelper(this);
         this.orthogonalTiledMapRenderer = tileMapHelper.setupMap();
 
         initLight();
+
+        // Enemy AI
+        Vector2 playerPos = player.getBody().getPosition();
+        enemy.startTrackingPlayer(playerPos);
 
         // Audio
         this.music = Gdx.audio.newMusic(Gdx.files.internal("audio/music_box.wav"));
@@ -130,6 +131,7 @@ public class GScreen extends ScreenAdapter {
         batch.setProjectionMatrix(camera.combined);
         orthogonalTiledMapRenderer.setView(camera);
         player.update();
+        
         enemy.update();
 
         if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
@@ -192,6 +194,13 @@ public class GScreen extends ScreenAdapter {
 
         this.batch.begin();
 
+        batch.draw(enemyAnimation, 
+        enemy.getBody().getPosition().x * Constants.PPM - (enemyAnimation.getRegionWidth() / 2), 
+        enemy.getBody().getPosition().y * Constants.PPM - (enemyAnimation.getRegionHeight() / 2),
+        enemyAnimation.getRegionWidth() / 2, enemyAnimation.getRegionHeight() / 2,
+        enemyAnimation.getRegionWidth(), enemyAnimation.getRegionHeight(),
+        enemyScaleX, enemyScaleY, 0);
+
         // Rendering the Items in Inventory
         for(String item : inventory) {
 
@@ -226,13 +235,6 @@ public class GScreen extends ScreenAdapter {
             }
 
         }
-
-        batch.draw(enemyAnimation, 
-        enemy.getBody().getPosition().x * Constants.PPM - (enemyAnimation.getRegionWidth() / 2), 
-        enemy.getBody().getPosition().y * Constants.PPM - (enemyAnimation.getRegionHeight() / 2),
-        enemyAnimation.getRegionWidth() / 2, enemyAnimation.getRegionHeight() / 2,
-        enemyAnimation.getRegionWidth(), enemyAnimation.getRegionHeight(),
-        enemyScaleX, enemyScaleY, 0);
             
         this.batch.end();
 
@@ -271,7 +273,21 @@ public class GScreen extends ScreenAdapter {
                 grab.play(10f);
             }
         }
+        enemy.handleInventorySize(inventory); 
+        // handleSpeedIncrease(inventory);
     }
+
+    // private void handleSpeedIncrease(ArrayList<String> inventory) {
+
+    //     if(inventory.size() >= 2) {
+          
+    //       enemy.increaseSpeed(0.5f);
+          
+    //       System.out.println(enemy.getSpeed());
+        
+    //     }
+      
+    //   }
 
     public void handleItemPickup(String itemName, Body itemBody) {
         
@@ -294,6 +310,8 @@ public class GScreen extends ScreenAdapter {
         } else if (itemName.equals("Picture")) {
             pictureFrame = null;
         }
+        
+        System.out.println(enemy.getSpeed());
     }
 
     public static void insertionSort(ArrayList<String> inventory) {

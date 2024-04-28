@@ -75,7 +75,7 @@ public class TileMapHelper {
                         false,
                         gameScreen.getWorld()
                     );
-                    gameScreen.setEnemy(new Enemy(rectangle.getWidth(), rectangle.getHeight(), body, 0, 0));
+                    gameScreen.setEnemy(new Enemy(rectangle.getWidth(), rectangle.getHeight(), body, 1));
                 }
 
                 if(rectangleName.equals("Esuba")) {

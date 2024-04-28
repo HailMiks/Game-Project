@@ -5,15 +5,12 @@ import java.util.ArrayList;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.mygdx.entropy.Objects.GameEntity;
-import com.mygdx.entropy.Objects.Items.Crow;
-import com.mygdx.entropy.Objects.Items.Esuba;
 import com.mygdx.entropy.Utils.Constants;
 
 public class Player extends GameEntity {
