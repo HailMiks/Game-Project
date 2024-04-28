@@ -309,9 +309,7 @@ public class GScreen extends ScreenAdapter {
             crayons = null;
         } else if (itemName.equals("Picture")) {
             pictureFrame = null;
-        }
-        
-        System.out.println(enemy.getSpeed());
+        }        
     }
 
     public static void insertionSort(ArrayList<String> inventory) {
