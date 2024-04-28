@@ -19,6 +19,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.World;
@@ -173,17 +174,10 @@ public class GScreen extends ScreenAdapter {
         float playerX = player.getBody().getPosition().x * Constants.PPM - (playerAnimation.getRegionWidth() / 2);
         float playerY = player.getBody().getPosition().y * Constants.PPM - (playerAnimation.getRegionHeight() - 28 / 2);
         float offSet = 65;
-        float enemyScaleX = 0.15f;
-        float enemyScaleY = 0.15f;
+        float enemyScaleX = 0.35f;
+        float enemyScaleY = 0.35f;
 
         renderItems();
-
-        batch.draw(enemyAnimation, 
-            enemy.getBody().getPosition().x * Constants.PPM - (enemyAnimation.getRegionWidth() / 2), 
-            enemy.getBody().getPosition().y * Constants.PPM - (enemyAnimation.getRegionHeight() / 2),
-            enemyAnimation.getRegionWidth() / 2, enemyAnimation.getRegionHeight() / 2,
-            enemyAnimation.getRegionWidth(), enemyAnimation.getRegionHeight(),
-            enemyScaleX, enemyScaleY, 0);
 
         batch.draw(playerAnimation, playerX, playerY);
 
@@ -198,6 +192,7 @@ public class GScreen extends ScreenAdapter {
 
         this.batch.begin();
 
+        // Rendering the Items in Inventory
         for(String item : inventory) {
 
             if(item.equals("Crow")) {
@@ -231,6 +226,13 @@ public class GScreen extends ScreenAdapter {
             }
 
         }
+
+        batch.draw(enemyAnimation, 
+        enemy.getBody().getPosition().x * Constants.PPM - (enemyAnimation.getRegionWidth() / 2), 
+        enemy.getBody().getPosition().y * Constants.PPM - (enemyAnimation.getRegionHeight() / 2),
+        enemyAnimation.getRegionWidth() / 2, enemyAnimation.getRegionHeight() / 2,
+        enemyAnimation.getRegionWidth(), enemyAnimation.getRegionHeight(),
+        enemyScaleX, enemyScaleY, 0);
             
         this.batch.end();
 

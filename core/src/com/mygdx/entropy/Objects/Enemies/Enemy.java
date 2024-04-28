@@ -11,7 +11,7 @@ import static com.mygdx.entropy.Utils.Constants.PPM;
 
 public class Enemy extends GameEntity {
 
-    private static final float FRAME_TIME = 1 / 4f;
+    private static final float FRAME_TIME = 1 / 12f;
     private TextureAtlas atlas;
     private Animation<TextureRegion> idle;
     private float elapsedTime;
@@ -30,8 +30,8 @@ public class Enemy extends GameEntity {
         this.chaseRadius = chaseRadius;
 
         // Animation
-        this.atlas = new TextureAtlas("player/shadow.atlas");
-        this.idle = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("idle"));
+        this.atlas = new TextureAtlas("player/monster.atlas");
+        this.idle = new Animation<TextureRegion>(FRAME_TIME, atlas.findRegions("enemy"));
 
         body.getFixtureList().first().setUserData(this);
     }
