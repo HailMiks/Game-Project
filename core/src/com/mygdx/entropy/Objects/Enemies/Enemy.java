@@ -24,10 +24,9 @@ public class Enemy extends GameEntity {
     private float baseSpeed;
     private static float chaseRadius = 40f; 
     private static final float startDistance = 40f; 
-    private Vector2 startPosition;
     private Vector2 playerPosition;
     private boolean isActive;
-    private float timeSinceLastPrint = 0f; 
+    // private float timeSinceLastPrint = 0f; 
     public boolean speedIncreased = false;
 
     
@@ -35,7 +34,7 @@ public class Enemy extends GameEntity {
 
     public Enemy(float width, float height, Body body, float speed) {
         super(width, height, body);
-        this.body = body;
+        Enemy.body = body;
         this.baseSpeed = speed;
 
         // Animation
@@ -51,12 +50,12 @@ public class Enemy extends GameEntity {
         float startAngle = MathUtils.random(MathUtils.PI2); // Random angle in radians
         float startX = playerPosition.x + startDistance * MathUtils.cos(startAngle);
         float startY = playerPosition.y + startDistance * MathUtils.sin(startAngle);
-        startPosition = new Vector2(startX, startY);
+        new Vector2(startX, startY);
 
         // Activate enemy and start tracking player
         isActive = true;
     }
-    
+
     @Override
     public void update() {
         x = body.getPosition().x * PPM;
@@ -73,12 +72,12 @@ public class Enemy extends GameEntity {
                 Vector2 direction = playerPosition.sub(body.getPosition());
                 body.setLinearVelocity(direction.nor().scl(speed));
         
-                // Print distance every second
-                timeSinceLastPrint += Gdx.graphics.getDeltaTime();
-                if (timeSinceLastPrint >= 1f) {
-                    System.out.println("Distance to player: " + dist);
-                    timeSinceLastPrint = 0f; // Reset timer
-                }
+                // // Print distance every second
+                // timeSinceLastPrint += Gdx.graphics.getDeltaTime();
+                // if (timeSinceLastPrint >= 1f) {
+                //     System.out.println("Distance to player: " + dist);
+                //     timeSinceLastPrint = 0f; // Reset timer
+                // }
             } 
         }
     }

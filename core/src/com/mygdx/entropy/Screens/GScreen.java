@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -54,6 +55,7 @@ public class GScreen extends ScreenAdapter {
     ContactListen contactListener;
 
     // Assets and Map
+    private static final float DEATH_FRAME_TIME = 1 / 6f;
     private OrthogonalTiledMapRenderer orthogonalTiledMapRenderer;
     private TileMapHelper tileMapHelper;
     private TextureAtlas atlas;
@@ -61,13 +63,13 @@ public class GScreen extends ScreenAdapter {
     private SpriteBatch batch;
     public static Music music;
     public static Music ambience, scream;
-    private Sound lightSound, grab, crowSound;
+    private Sound lightSound, grab, crowSound, jumpScareSound;
     private boolean playedScream = false;
     long soundId;
     private BitmapFont font;
 
     private PointLight light;
-    private Texture crowInv, buttonInv, needleInv, crayonsInv, threadsInv, pictureFrameInv;
+    private Texture crowInv, buttonInv, needleInv, crayonsInv, threadsInv, pictureFrameInv, jumpScare;
 
     // Game Objects
     private Player player;
@@ -79,18 +81,35 @@ public class GScreen extends ScreenAdapter {
     private PictureFrame pictureFrame;
     private Threads threads;
     private Crow crow;
-    boolean eKeyPressed = false;
+    private boolean needlePicked = false;
+    private boolean buttonPicked = false;
+    private boolean crowPicked = false;
+    private boolean threadsPicked = false;
+    private boolean crayonsPicked = false;
+    private boolean pictureFramePicked = false;
+    private boolean esubaTexture = true;
+    boolean esubaKey = false;
     float displayDuration = 5.0f; 
     float elapsedTime = 0.0f;
     float timeElapsed = 0.0f;
+    float itempickTime = 0.0f;
+
+    private boolean scare = false;
+    private boolean showJumpScare = false;
+    private boolean jumpScareSoundPlayed = false;
+    private Animation<TextureRegion> death;
 
     public GScreen(OrthographicCamera camera) {
         
         viewport = new ExtendViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         this.camera = camera;
         this.batch = new SpriteBatch();
+        this.atlas = new TextureAtlas("images/death.atlas");
+        this.death = new Animation<TextureRegion>(DEATH_FRAME_TIME, atlas.findRegions("death"));
         
         this.contactListener = new ContactListen();
+
+        jumpScare = new Texture("images/jumpscare.png");
 
         // Items
         crowInv = new Texture("crow.png");
@@ -134,6 +153,7 @@ public class GScreen extends ScreenAdapter {
         scream = Gdx.audio.newMusic(Gdx.files.internal("audio/screaming.mp3"));
         grab = Gdx.audio.newSound(Gdx.files.internal("audio/grab.mp3"));
         crowSound = Gdx.audio.newSound(Gdx.files.internal("audio/crow.mp3"));
+        jumpScareSound = Gdx.audio.newSound(Gdx.files.internal("audio/jumpscareAudio.mp3"));
 
         music.setLooping(true);
         ambience.setLooping(true);
@@ -217,9 +237,7 @@ public class GScreen extends ScreenAdapter {
 
         ArrayList<String> inventory = player.inventory;
 
-        handleItemInteraction();
-
-        this.batch.begin();
+        batch.begin(); 
         // render the objects
         TextureRegion playerAnimation = player.getCurrentFrame();
         TextureRegion enemyAnimation = enemy.getCurrentFrame();
@@ -230,6 +248,16 @@ public class GScreen extends ScreenAdapter {
         float enemyScaleY = 0.35f;
 
         renderItems();
+        
+        if (!esubaTexture) {
+            TextureRegion dadTexture = esuba.getDadTexture();
+            float scale = 1f; 
+            float width = dadTexture.getRegionWidth() * scale;
+            float height = dadTexture.getRegionHeight() * scale;
+            batch.draw(dadTexture, 
+                esuba.getBody().getPosition().x * Constants.PPM - (dadTexture.getRegionWidth() / 2), 
+                esuba.getBody().getPosition().y * Constants.PPM - (dadTexture.getRegionHeight() / 2), width, height);
+        }
 
         batch.draw(playerAnimation, playerX, playerY);
 
@@ -237,12 +265,13 @@ public class GScreen extends ScreenAdapter {
         float startX = playerX - invWidth/2 + 10;
         int xOffset = 0;
 
-        this.batch.end();
+        batch.end(); 
         
         rayHandler.setCombinedMatrix(camera);
         rayHandler.updateAndRender();
 
-        this.batch.begin();
+        batch.begin(); 
+        handleItemInteraction();
 
         batch.draw(enemyAnimation, 
         enemy.getBody().getPosition().x * Constants.PPM - (enemyAnimation.getRegionWidth() / 2), 
@@ -286,75 +315,179 @@ public class GScreen extends ScreenAdapter {
 
         }
             
-        this.batch.end();
+        batch.end(); 
 
         font = new BitmapFont(); 
         font.getData().setScale(0.3f);
         float centerX = playerX + (playerAnimation.getRegionWidth() / 2);
 
-        batch.begin();
+        batch.begin(); 
         timeElapsed += Gdx.graphics.getDeltaTime(); 
         if (timeElapsed < displayDuration) {
-        font.setColor(Color.WHITE);
-        font.draw(batch, "Press (E) to interact | Press (F) to turn off your light", centerX, playerY - 14, 0, Align.center, false);
-        font.draw(batch, "Collect 6 ITEMS", centerX, playerY - 22, 0, Align.center, false);
+            font.setColor(Color.WHITE);
+            font.draw(batch, "Press (E) to interact | Press (F) to turn off your light", centerX, playerY - 14, 0, Align.center, false);
+            font.draw(batch, "Collect 6 ITEMS", centerX, playerY - 22, 0, Align.center, false);
         }
-        batch.end();
+        batch.end(); 
 
-        batch.begin();
-        if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-            if (contactListener.esubaInteract) {
-                eKeyPressed = true; 
-                elapsedTime = 0.0f; 
+        batch.begin(); 
+        
+        triggerJumpscare();
+
+        if (showJumpScare) {
+            TextureRegion currentFrame = death.getKeyFrame(elapsedTime, false);
+            float scaleFactor = 1.1f; 
+            float textureWidth = currentFrame.getRegionWidth() * scaleFactor;
+            float textureHeight = currentFrame.getRegionHeight() * scaleFactor;
+            float textureX = camera.position.x - textureWidth / 2;
+            float textureY = camera.position.y - textureHeight / 2;
+            batch.draw(jumpScare, textureX, textureY, textureWidth, textureHeight);
+
+            if (!jumpScareSoundPlayed) {
+                jumpScareSound.play();
+                jumpScareSoundPlayed = true; 
+            }
+
+            elapsedTime += Gdx.graphics.getDeltaTime(); 
+            System.out.println(elapsedTime);
+
+            if (elapsedTime > 4) {
+                showJumpScare = false;
+                scare = true; 
             }
         } 
-        if (eKeyPressed) {            
+        if (scare) {
+            elapsedTime += delta;
+    
+            TextureRegion currentFrame = death.getKeyFrame(elapsedTime, false);
+            float scaleFactor = 1.1f; 
+            float animationWidth = currentFrame.getRegionWidth() * scaleFactor;
+            float animationHeight = currentFrame.getRegionHeight() * scaleFactor;
+            float aspectRatio = (float) currentFrame.getRegionWidth() / currentFrame.getRegionHeight();
+            if (animationWidth / animationHeight > aspectRatio) {
+                animationWidth = animationHeight * aspectRatio;
+            } else {
+                animationHeight = animationWidth / aspectRatio;
+            }
+            float animationX = camera.position.x - animationWidth / 2;
+            float animationY = camera.position.y - animationHeight / 2;
+    
+            batch.draw(currentFrame, animationX, animationY, animationWidth, animationHeight);
+            
+            if (death.isAnimationFinished(elapsedTime)) {
+                Gdx.app.exit(); // Exit the game
+            }
+        }
+        batch.end(); 
+    }
+    
+        
+
+    private void handleItemInteraction() {
+        ArrayList<String> inventory = player.inventory;
+        TextureRegion playerAnimation = player.getCurrentFrame();
+        float playerX = player.getBody().getPosition().x * Constants.PPM - (playerAnimation.getRegionWidth() / 2);
+        float playerY = player.getBody().getPosition().y * Constants.PPM - (playerAnimation.getRegionHeight() - 28 / 2);
+        font = new BitmapFont(); 
+        font.getData().setScale(0.3f);
+        float centerX = playerX + (playerAnimation.getRegionWidth() / 2);
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            if (contactListener.esubaInteract) {
+                esubaKey = true; 
+                elapsedTime = 0.0f; 
+            } else if (contactListener.pickNeedle) {
+                handleItemPickup("Needle", needle.getBody());
+                grab.play(10f);
+                needlePicked = true; 
+                itempickTime = 0;
+            } else if (contactListener.pickButton) {
+                handleItemPickup("Button", button.getBody());
+                grab.play(10f);
+                buttonPicked = true; 
+                itempickTime = 0;
+            } else if (contactListener.pickCrow) {
+                handleItemPickup("Crow", crow.getBody());
+                grab.play(10f);
+                crowPicked = true; 
+                itempickTime = 0;
+            } else if (contactListener.pickThreads) {
+                handleItemPickup("Threads", threads.getBody());
+                grab.play(10f);
+                threadsPicked = true; 
+                itempickTime = 0; 
+            } else if (contactListener.pickCrayons) {
+                handleItemPickup("Crayons", crayons.getBody());
+                grab.play(10f);
+                crayonsPicked = true; 
+                itempickTime = 0; 
+            } else if (contactListener.pickPicture) {
+                handleItemPickup("Picture", pictureFrame.getBody());
+                grab.play(10f);
+                pictureFramePicked = true; 
+                itempickTime = 0; 
+            }
+        }
+        
+        if (esubaKey) {            
             if (inventory.size() == 0) {
                 font.setColor(Color.valueOf("#C8A000"));
-                font.draw(batch, "Why am I here...?  I'm scared...", centerX, playerY + 30, 0, Align.center, false);
-                font.draw(batch, "Maybe I'll remember if I find my 6 special things!", centerX, playerY + 22, 0, Align.center, false);
+                font.draw(batch, "Where am I...?  I'm scared...", centerX, playerY + 30, 0, Align.center, false);
+                font.draw(batch, "Remember, Lumian! You have to remember!", centerX, playerY + 22, 0, Align.center, false);
             } else if (inventory.size() <= 5) {
                 font.setColor(Color.valueOf("#C8A000"));
                 font.draw(batch, "I've only found " + inventory.size() + " things so far...", centerX, playerY + 30, 0, Align.center, false);
                 font.draw(batch, "But I'm not giving up!  There's only " + (6 - inventory.size()) + " more to go!.", centerX, playerY + 22, 0, Align.center, false);
             } else if (inventory.size() == 6) {
                 font.draw(batch, "Dad...", centerX, playerY + 22, 0, Align.center, false);
+                
+                font.setColor(Color.valueOf(Constants.color));
+                font.draw(batch, "From order to chaos; From love to hate, Entropy.", centerX, playerY - 14, 0, Align.center, false);
+                font.draw(batch, "Fin.", centerX, playerY - 22, 0, Align.center, false);
+                esubaTexture = false;
             }
             elapsedTime += Gdx.graphics.getDeltaTime(); 
             if (elapsedTime >= displayDuration) {
-                eKeyPressed = false; 
+                esubaKey = false;
+                elapsedTime = 0; 
             }
         }
-        batch.end();
-
-    } 
-
-    private void handleItemInteraction() {
-        ArrayList<String> inventory = player.inventory;
-        if(Gdx.input.isKeyJustPressed(Input.Keys.E)){
-            if(contactListener.esubaInteract) {
-            } else if(contactListener.pickNeedle) {
-                handleItemPickup("Needle", needle.getBody());
-                grab.play(10f);
-            } else if(contactListener.pickButton) {
-                handleItemPickup("Button", button.getBody());
-                grab.play(10f);
-            } else if(contactListener.pickCrow) {
-                handleItemPickup("Crow", crow.getBody());
-                grab.play(10f);
-            } else if(contactListener.pickThreads) {
-                handleItemPickup("Threads", threads.getBody());
-                grab.play(10f);
-            } else if(contactListener.pickCrayons) {
-                handleItemPickup("Crayons", crayons.getBody());
-                grab.play(10f);
-            } else if(contactListener.pickPicture) {
-                handleItemPickup("Picture", pictureFrame.getBody());
-                grab.play(10f);
+        
+        if (needlePicked || buttonPicked || crowPicked || threadsPicked || crayonsPicked || pictureFramePicked) {
+            if (needlePicked) {
+                font.setColor(Color.valueOf("#C8A000"));
+                font.draw(batch, "This...? It's dangerous. But maybe it'll fix everything...", centerX, playerY + 30, 0, Align.center, false);
+            } else if (buttonPicked) {
+                font.setColor(Color.valueOf("#C8A000"));
+                font.draw(batch, "They, the voices, it wouldn't stop!", centerX, playerY + 30, 0, Align.center, false);
+            } else if (crowPicked) {
+                font.setColor(Color.valueOf("#C8A000"));
+                font.draw(batch, "You did good... What have you done...? He'll love us again!", centerX, playerY + 30, 0, Align.center, false);
+            } else if (threadsPicked) {
+                font.setColor(Color.valueOf("#C8A000"));
+                font.draw(batch, "If I use this... Maybe it'll all be okay again...", centerX, playerY + 30, 0, Align.center, false);
+            } else if (crayonsPicked) {
+                font.setColor(Color.valueOf("#C8A000"));
+                font.draw(batch, "Mom gave me these. I miss her... I miss her so much...", centerX, playerY + 30, 0, Align.center, false);
+            } else if (pictureFramePicked) {
+                font.setColor(Color.valueOf("#C8A000"));
+                font.draw(batch, "I had to... I'm sorry... There was no other way...", centerX, playerY + 30, 0, Align.center, false);
+            }
+            itempickTime += Gdx.graphics.getDeltaTime(); 
+            if (itempickTime >= displayDuration) {
+                needlePicked = false;
+                buttonPicked = false;
+                crowPicked = false;
+                threadsPicked = false;
+                crayonsPicked = false;
+                pictureFramePicked = false;
+                itempickTime = 0; 
             }
         }
+        
         enemy.handleInventorySize(inventory); 
     }
+    
 
     public void handleItemPickup(String itemName, Body itemBody) {
         
@@ -434,10 +567,20 @@ public class GScreen extends ScreenAdapter {
                 pictureFrame.getBody().getPosition().x * Constants.PPM - (pictureFrameTexture.getRegionWidth() / 2), 
                 pictureFrame.getBody().getPosition().y * Constants.PPM - (pictureFrameTexture.getRegionHeight() / 2));
         }
+        if (esubaTexture) {
+            TextureRegion esubaTexture = esuba.getTexture();
+            batch.draw(esubaTexture, 
+                esuba.getBody().getPosition().x * Constants.PPM - (esubaTexture.getRegionWidth() / 2), 
+                esuba.getBody().getPosition().y * Constants.PPM - (esubaTexture.getRegionHeight() / 2));
+        }
     }
 
     public void triggerJumpscare() {
-        // Show jumpscare image/animation
+        if(contactListener.enemyTouched) {
+            showJumpScare = true;
+            scream.stop();
+            ambience.stop();
+        }
     }
 
     private void initLight() {
@@ -535,6 +678,7 @@ public class GScreen extends ScreenAdapter {
         lightSound.dispose();
         scream.dispose();
         grab.dispose();
+        ambience.dispose();
         super.dispose();
         if (atlas != null) {
             atlas.dispose();

@@ -24,7 +24,7 @@ public class ContactListen implements ContactListener {
     public boolean pickThreads = false;
     public boolean pickPicture = false;
     public boolean pickCrayons = false;
-
+    public boolean enemyTouched = false;
 
     @Override
     public void beginContact(Contact contact) {
@@ -39,6 +39,7 @@ public class ContactListen implements ContactListener {
             Enemy enemy = (Enemy) enemyFixture.getUserData();
             enemy.getBody().setLinearDamping(500f); // Heaviness
 
+            enemyTouched = true;
             System.out.println("Dead");
         }
 

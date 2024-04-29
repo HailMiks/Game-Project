@@ -1,5 +1,6 @@
 package com.mygdx.entropy;
 
+import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 
@@ -11,6 +12,7 @@ public class DesktopLauncher {
 		// config.setWindowedMode(800, 600);
 		config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
 		config.setTitle("Entropy");
+		config.setWindowIcon(FileType.Internal, "esuba.png");
 		new Lwjgl3Application(new Entropy(), config);
 	}
 }
