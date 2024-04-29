@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.mygdx.entropy.Utils.Constants;
 import com.mygdx.entropy.Utils.ContactListen;
@@ -62,6 +64,7 @@ public class GScreen extends ScreenAdapter {
     private Sound lightSound, grab, crowSound;
     private boolean playedScream = false;
     long soundId;
+    private BitmapFont font;
 
     private PointLight light;
     private Texture crowInv, buttonInv, needleInv, crayonsInv, threadsInv, pictureFrameInv;
@@ -76,6 +79,10 @@ public class GScreen extends ScreenAdapter {
     private PictureFrame pictureFrame;
     private Threads threads;
     private Crow crow;
+    boolean eKeyPressed = false;
+    float displayDuration = 5.0f; 
+    float elapsedTime = 0.0f;
+    float timeElapsed = 0.0f;
 
     public GScreen(OrthographicCamera camera) {
         
@@ -281,21 +288,51 @@ public class GScreen extends ScreenAdapter {
             
         this.batch.end();
 
+        font = new BitmapFont(); 
+        font.getData().setScale(0.3f);
+        float centerX = playerX + (playerAnimation.getRegionWidth() / 2);
+
+        batch.begin();
+        timeElapsed += Gdx.graphics.getDeltaTime(); 
+        if (timeElapsed < displayDuration) {
+        font.setColor(Color.WHITE);
+        font.draw(batch, "Press (E) to interact | Press (F) to turn off your light", centerX, playerY - 14, 0, Align.center, false);
+        font.draw(batch, "Collect 6 ITEMS", centerX, playerY - 22, 0, Align.center, false);
+        }
+        batch.end();
+
+        batch.begin();
+        if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            if (contactListener.esubaInteract) {
+                eKeyPressed = true; 
+                elapsedTime = 0.0f; 
+            }
+        } 
+        if (eKeyPressed) {            
+            if (inventory.size() == 0) {
+                font.setColor(Color.valueOf("#C8A000"));
+                font.draw(batch, "Why am I here...?  I'm scared...", centerX, playerY + 30, 0, Align.center, false);
+                font.draw(batch, "Maybe I'll remember if I find my 6 special things!", centerX, playerY + 22, 0, Align.center, false);
+            } else if (inventory.size() <= 5) {
+                font.setColor(Color.valueOf("#C8A000"));
+                font.draw(batch, "I've only found " + inventory.size() + " things so far...", centerX, playerY + 30, 0, Align.center, false);
+                font.draw(batch, "But I'm not giving up!  There's only " + (6 - inventory.size()) + " more to go!.", centerX, playerY + 22, 0, Align.center, false);
+            } else if (inventory.size() == 6) {
+                font.draw(batch, "Dad...", centerX, playerY + 22, 0, Align.center, false);
+            }
+            elapsedTime += Gdx.graphics.getDeltaTime(); 
+            if (elapsedTime >= displayDuration) {
+                eKeyPressed = false; 
+            }
+        }
+        batch.end();
+
     } 
 
     private void handleItemInteraction() {
         ArrayList<String> inventory = player.inventory;
         if(Gdx.input.isKeyJustPressed(Input.Keys.E)){
             if(contactListener.esubaInteract) {
-                if(inventory.size() == 0) {
-                    System.out.println("You must recall your memories");
-                    System.out.println("Find 6 Items that will help you remember...");
-                } else if(inventory.size() <= 5) {
-                    System.out.println("You have collected: " + inventory.size() + " items");
-                } else if(inventory.size() == 6) {
-                    System.out.println("You have collected: " + inventory.size() + " items");
-                    System.out.println("You remember everything... my child...");
-                }
             } else if(contactListener.pickNeedle) {
                 handleItemPickup("Needle", needle.getBody());
                 grab.play(10f);
@@ -401,7 +438,7 @@ public class GScreen extends ScreenAdapter {
 
     public void triggerJumpscare() {
         // Show jumpscare image/animation
-      }
+    }
 
     private void initLight() {
         light = new PointLight(rayHandler, 128, new Color(1, 1, 0.7f, 1f), 10, player.getBody().getPosition().x * Constants.PPM, player.getBody().getPosition().y * Constants.PPM);
