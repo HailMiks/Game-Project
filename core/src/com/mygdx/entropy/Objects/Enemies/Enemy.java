@@ -66,7 +66,7 @@ public class Enemy extends GameEntity {
             float dist = body.getPosition().dst(playerPosition);
     
             if (dist <= chaseRadius) {
-                isActive = true; // Activate enemy if player is within radius
+                isActive = true;
         
                 // Chase
                 Vector2 direction = playerPosition.sub(body.getPosition());

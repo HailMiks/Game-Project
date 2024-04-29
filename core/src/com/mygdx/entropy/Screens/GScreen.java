@@ -43,8 +43,9 @@ import com.mygdx.entropy.Objects.Items.Threads;
 
 public class GScreen extends ScreenAdapter {
 
+    // Viewport
     private ExtendViewport viewport;
-    private final float WORLD_WIDTH = 1920; // Replace with your desired world width
+    private final float WORLD_WIDTH = 1920; 
     private final float WORLD_HEIGHT = 1080;
 
     // Box2D
@@ -61,15 +62,16 @@ public class GScreen extends ScreenAdapter {
     private TextureAtlas atlas;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    public static Music music;
-    public static Music ambience, scream;
+    public static Music music, ambience, scream;
     private Sound lightSound, grab, crowSound, jumpScareSound;
-    private boolean playedScream = false;
+    private boolean playedScream = false, jumpScareSoundPlayed = false;
     long soundId;
     private BitmapFont font;
 
     private PointLight light;
     private Texture crowInv, buttonInv, needleInv, crayonsInv, threadsInv, pictureFrameInv, jumpScare;
+    private boolean scare = false, showJumpScare = false;
+    private Animation<TextureRegion> death;
 
     // Game Objects
     private Player player;
@@ -93,11 +95,6 @@ public class GScreen extends ScreenAdapter {
     float elapsedTime = 0.0f;
     float timeElapsed = 0.0f;
     float itempickTime = 0.0f;
-
-    private boolean scare = false;
-    private boolean showJumpScare = false;
-    private boolean jumpScareSoundPlayed = false;
-    private Animation<TextureRegion> death;
 
     public GScreen(OrthographicCamera camera) {
         
@@ -192,7 +189,6 @@ public class GScreen extends ScreenAdapter {
             }
         } else if (dist > 5f && dist <= 15f) {
             float maxVolume = 0.5f; 
-
             float distanceThreshold = 5.0f; 
             float volume = maxVolume - Math.max(0, Math.min(maxVolume, (dist - distanceThreshold) / 10.0f));
             scream.setVolume(volume);
