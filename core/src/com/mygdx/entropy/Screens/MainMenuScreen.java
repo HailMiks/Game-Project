@@ -125,6 +125,8 @@ public class MainMenuScreen implements Screen{
                 entropy.setScreen(entropy.mainGScreen);
                 GScreen.music.stop();
                 GScreen.ambience.setVolume(0.5f);
+            
+                Gdx.input.setCursorCatched(true);
             }
         });
     

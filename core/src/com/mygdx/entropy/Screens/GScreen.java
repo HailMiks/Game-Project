@@ -132,6 +132,7 @@ public class GScreen extends ScreenAdapter {
         ambience.setLooping(true);
         music.setVolume(0.5f);
         scream.setVolume(0.5f);
+        scream.setLooping(true);
         ambience.setVolume(0.2f);
         ambience.play();
         crowSound.play();
@@ -150,15 +151,15 @@ public class GScreen extends ScreenAdapter {
         orthogonalTiledMapRenderer.setView(camera);
         player.update();
         
-        enemy.update();
-
-        
+        if (light.isActive()) {
+            enemy.update();
+        }
     
         float dist = player.getBody().getPosition().dst(enemy.getBody().getPosition());
 
         if (dist < 5f) {
             if (!playedScream) {
-                scream.setVolume(0.5f); // Set default volume
+                scream.setVolume(0.5f);
                 scream.play();
                 playedScream = true;
             }
@@ -402,6 +403,24 @@ public class GScreen extends ScreenAdapter {
         // Show jumpscare image/animation
       }
 
+    private void initLight() {
+        light = new PointLight(rayHandler, 128, new Color(1, 1, 0.7f, 1f), 10, player.getBody().getPosition().x * Constants.PPM, player.getBody().getPosition().y * Constants.PPM);
+        light.attachToBody(player.getBody());
+        light.setStaticLight(false);
+        light.setSoftnessLength(2);
+        light.setDistance(2);
+        light.setSoft(true);
+    }
+
+    public void toggleLight(PointLight light) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+            light.setActive(!light.isActive());
+            if (light.isActive()) {
+                lightSound.play(0.5f);
+            }
+        }
+    }
+
     public TextureAtlas getAtlas() {
         return atlas;
     }
@@ -445,24 +464,6 @@ public class GScreen extends ScreenAdapter {
     public void setButton(Button button) {
         this.button = button;
     } 
-
-    private void initLight() {
-        light = new PointLight(rayHandler, 128, new Color(1, 1, 0.7f, 1f), 10, player.getBody().getPosition().x * Constants.PPM, player.getBody().getPosition().y * Constants.PPM);
-        light.attachToBody(player.getBody());
-        light.setStaticLight(false);
-        light.setSoftnessLength(2);
-        light.setDistance(2);
-        light.setSoft(true);
-    }
-
-    public void toggleLight(PointLight light) {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-            light.setActive(!light.isActive());
-            if (light.isActive()) {
-                lightSound.play(0.5f);
-            }
-        }
-    }
 
     @Override
     public void resize(int width, int height) {

@@ -102,8 +102,11 @@ public class LoadingScreen implements Screen{
     @Override
     public void dispose() {
        shapeRenderer.dispose();
-      
+       entropy.assets.unload("images\\entropy_img.png");
+       entropy.assets.unload("ui\\uiskin.atlas");
+       entropy.assets.unload("images\\background.png");
+       entropy.assets.unload("ui\\uiskin.json");
+       entropy.assets.unload("ui\\uiskin.png");
     }
     
-   
 }

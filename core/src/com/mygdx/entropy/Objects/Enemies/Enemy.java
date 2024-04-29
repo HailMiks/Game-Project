@@ -56,6 +56,7 @@ public class Enemy extends GameEntity {
         // Activate enemy and start tracking player
         isActive = true;
     }
+    
     @Override
     public void update() {
         x = body.getPosition().x * PPM;
