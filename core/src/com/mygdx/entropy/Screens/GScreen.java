@@ -52,8 +52,8 @@ public class GScreen extends ScreenAdapter {
     private TextureAtlas atlas;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    private Music music;
-    private Sound lightSound, grab;
+    private Music music, ambience;
+    private Sound lightSound, grab, scream, crowSound;
     private PointLight light;
     private Texture crowInv, buttonInv, needleInv, crayonsInv, threadsInv, pictureFrameInv;
 
@@ -87,7 +87,7 @@ public class GScreen extends ScreenAdapter {
         this.world = new World(new Vector2(0, 0), false);
         this.world.setContactListener(contactListener);
         this.box2dDebugRenderer = new Box2DDebugRenderer(
-            true,
+            false,
             false,
             false,
             true,
@@ -99,7 +99,7 @@ public class GScreen extends ScreenAdapter {
         rayHandler.setBlurNum(3);
         RayHandler.useDiffuseLight(true);
         rayHandler.setCulling(false);
-        rayHandler.setShadows(false);
+        rayHandler.setShadows(true);
 
         this.tileMapHelper = new TileMapHelper(this);
         this.orthogonalTiledMapRenderer = tileMapHelper.setupMap();
@@ -112,12 +112,19 @@ public class GScreen extends ScreenAdapter {
 
         // Audio
         this.music = Gdx.audio.newMusic(Gdx.files.internal("audio/music_box.wav"));
+        this.ambience = Gdx.audio.newMusic(Gdx.files.internal("audio/ambience.mp3"));
         lightSound = Gdx.audio.newSound(Gdx.files.internal("audio/matchStick.mp3"));
+        
         grab = Gdx.audio.newSound(Gdx.files.internal("audio/grab.mp3"));
+        crowSound = Gdx.audio.newSound(Gdx.files.internal("audio/crow.mp3"));
 
         music.setLooping(true);
+        ambience.setLooping(true);
         music.setVolume(0.5f);
-        music.play();
+        ambience.setVolume(0.5f);
+        ambience.play();
+        crowSound.play();
+        // music.play();
     }
 
     private void update() {
@@ -274,20 +281,7 @@ public class GScreen extends ScreenAdapter {
             }
         }
         enemy.handleInventorySize(inventory); 
-        // handleSpeedIncrease(inventory);
     }
-
-    // private void handleSpeedIncrease(ArrayList<String> inventory) {
-
-    //     if(inventory.size() >= 2) {
-          
-    //       enemy.increaseSpeed(0.5f);
-          
-    //       System.out.println(enemy.getSpeed());
-        
-    //     }
-      
-    //   }
 
     public void handleItemPickup(String itemName, Body itemBody) {
         
