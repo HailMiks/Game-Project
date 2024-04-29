@@ -29,7 +29,7 @@ public class SplashScreen implements Screen {
         System.out.println("SPLASH SCREEN");
         Gdx.input.setInputProcessor(stage);
 
-        Runnable trasitionRunnable = new Runnable() {
+        Runnable transitionRunnable = new Runnable() {
             @Override
             public void run() {
                 entropy.setScreen(entropy.mainMenuScreen);
@@ -39,13 +39,12 @@ public class SplashScreen implements Screen {
 
         Texture splashText = entropy.assets.get("images\\entropy_img.png", Texture.class);
         splashImg = new Image(splashText); 
-        splashImg.setPosition(stage.getWidth() / 2 -300, stage.getHeight() /2 -100);
+        splashImg.setPosition(stage.getWidth() / 2 - 300, stage.getHeight() /2 -100);
 
         //effects for splash screen
         splashImg.addAction(sequence(alpha(0f), 
-        fadeIn(2f), fadeOut(1.25f), 
-        run(trasitionRunnable)));
-      
+        fadeIn(3f), fadeOut(3f), 
+        run(transitionRunnable)));
 
         stage.addActor(splashImg); 
     }
@@ -59,9 +58,9 @@ public class SplashScreen implements Screen {
 
         stage.draw();
 
-        entropy.batch.begin();
-        entropy.font.draw(entropy.batch, "SCREEN: SPLASH", 120, 120);
-        entropy.batch.end();
+        // entropy.batch.begin();
+        // entropy.font.draw(entropy.batch, "SCREEN: SPLASH", 120, 120);
+        // entropy.batch.end();
         
     }
 

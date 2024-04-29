@@ -32,7 +32,7 @@ public class Player extends GameEntity {
     public Player(float width, float height, Body body) {
         super(width, height, body);
         this.speed = 1.8f;
-        this.body = body;
+        Player.body = body;
         
         // Animation
         this.atlas = new TextureAtlas("player/lumianMove.atlas");

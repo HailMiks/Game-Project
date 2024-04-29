@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeType;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.mygdx.entropy.Screens.GScreen;
 import com.mygdx.entropy.Screens.LoadingScreen;
@@ -32,15 +31,13 @@ public class Entropy extends Game {
 		INSTANCE = this;
 	}	
 
-	
-  
-
 	public AssetManager assets;
 	
 	public LoadingScreen loadingScreen;
 	public SplashScreen splashScreen;
 	public MainMenuScreen mainMenuScreen;
 	public GScreen mainGScreen;
+	public Object viewport;
 	
 	@Override
 	public void create () {
@@ -79,11 +76,11 @@ public class Entropy extends Game {
     }
 
 	private void initFont() {
-	FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font\\HelpMe.ttf"));
+	FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font\\MAXsomsin.ttf"));
 	FreeTypeFontGenerator.FreeTypeFontParameter params = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-	params.size =24;
-	params.color = Color.RED;
+	params.size = 34;
+	params.color = Color.WHITE;
 	font = generator.generateFont(params);
 	
 	}

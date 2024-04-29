@@ -1,7 +1,5 @@
 package com.mygdx.entropy.Utils;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
@@ -41,7 +39,7 @@ public class ContactListen implements ContactListener {
             Enemy enemy = (Enemy) enemyFixture.getUserData();
             enemy.getBody().setLinearDamping(500f); // Heaviness
 
-            System.out.println("OUCH!");
+            System.out.println("Dead");
         }
 
         if ((fa.getUserData() instanceof Player && fb.getUserData() instanceof Esuba) ||
@@ -49,7 +47,7 @@ public class ContactListen implements ContactListener {
             
             // Mr Esuba's body
             Fixture itemFixture = fa.getUserData() instanceof Esuba ? fa : fb;
-            Esuba esuba = (Esuba) itemFixture.getUserData();
+            itemFixture.getUserData();
             
             System.out.println("Detected player-item contact");
             System.out.println(fa.getUserData());
@@ -64,7 +62,7 @@ public class ContactListen implements ContactListener {
             
             // Needle Item's body
             Fixture needleFixture = fa.getUserData() instanceof Needle ? fa : fb;
-            Needle needle = (Needle) needleFixture.getUserData();
+            needleFixture.getUserData();
             
             System.out.println("Detected player-needle contact");
             System.out.println(fa.getUserData());
@@ -79,7 +77,7 @@ public class ContactListen implements ContactListener {
             
             // Button Item's body
             Fixture buttonFixture = fa.getUserData() instanceof Button ? fa : fb;
-            Button button = (Button) buttonFixture.getUserData();
+            buttonFixture.getUserData();
             
             System.out.println("Detected player-button contact");
             System.out.println(fa.getUserData());
@@ -94,7 +92,7 @@ public class ContactListen implements ContactListener {
             
             // Crow Item's body
             Fixture crowFixture = fa.getUserData() instanceof Crow ? fa : fb;
-            Crow crow = (Crow) crowFixture.getUserData();
+            crowFixture.getUserData();
             
             System.out.println("Detected player-crow contact");
             System.out.println(fa.getUserData());
@@ -109,7 +107,7 @@ public class ContactListen implements ContactListener {
             
             // Crayon Item's body
             Fixture crayonsFixture = fa.getUserData() instanceof Crayons ? fa : fb;
-            Crayons crayons = (Crayons) crayonsFixture.getUserData();
+            crayonsFixture.getUserData();
             
             System.out.println("Detected player-crayons contact");
             System.out.println(fa.getUserData());
@@ -124,7 +122,7 @@ public class ContactListen implements ContactListener {
             
             // Item's body
             Fixture threadsFixture = fa.getUserData() instanceof Threads ? fa : fb;
-            Threads threads = (Threads) threadsFixture.getUserData();
+            threadsFixture.getUserData();
             
             System.out.println("Detected player-button contact");
             System.out.println(fa.getUserData());
@@ -139,8 +137,9 @@ public class ContactListen implements ContactListener {
             
             // Item's body
             Fixture pictureFixture = fa.getUserData() instanceof PictureFrame ? fa : fb;
-            PictureFrame picture = (PictureFrame) pictureFixture.getUserData();
-            
+            pictureFixture.getUserData();
+            //PictureFrame picture = (PictureFrame) pictureFixture.getUserData();
+
             System.out.println("Detected player-picture contact");
             System.out.println(fa.getUserData());
             System.out.println(fb.getUserData());

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import com.mygdx.entropy.Utils.Constants;
 import com.mygdx.entropy.Entropy;
 
 public class LoadingScreen implements Screen{
@@ -28,6 +29,7 @@ public class LoadingScreen implements Screen{
 
         entropy.assets.load("images\\entropy_img.png", Texture.class);
         entropy.assets.load("ui\\uiskin.atlas", TextureAtlas.class);
+        entropy.assets.load("images\\background.png", Texture.class);
     }
 
     @Override
@@ -56,17 +58,25 @@ public class LoadingScreen implements Screen{
 
 
         shapeRenderer.begin(ShapeType.Filled);
+
+        float rectWidth = entropy.camera.viewportWidth - 240;
+        float rectHeight = 8;
+        float rectX = (entropy.camera.viewportWidth + rectWidth) / 2; 
+        float rectY = entropy.camera.viewportHeight / 2 - 16; 
+
         shapeRenderer.setColor(Color.GRAY);
-        shapeRenderer.rect(32, entropy.camera.viewportHeight / 2 -16 , entropy.camera.viewportWidth - 65, 16);
-        
-        shapeRenderer.setColor(Color.RED);
-        shapeRenderer.rect(32, entropy.camera.viewportHeight / 2 - 16 , progress * (entropy.camera.viewportWidth - 65), 16);
+        shapeRenderer.rect(rectX, rectY, rectWidth, rectHeight);
+
+        float progressWidth = progress * rectWidth;
+
+        shapeRenderer.setColor(Color.valueOf(Constants.color));
+        shapeRenderer.rect(rectX, rectY, progressWidth, rectHeight);
+
         shapeRenderer.end();
 
-        entropy.batch.begin();
-        entropy.font.draw(entropy.batch, "SCREEN: LOAD", 120, 120);
-        entropy.batch.end();
-
+        // entropy.batch.begin();
+        // entropy.font.draw(entropy.batch, "SCREEN: LOAD", 120, 120);
+        // entropy.batch.end();
     }
 
     @Override

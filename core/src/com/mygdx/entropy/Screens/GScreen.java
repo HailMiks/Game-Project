@@ -20,6 +20,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.mygdx.entropy.Utils.Constants;
 import com.mygdx.entropy.Utils.ContactListen;
 import com.mygdx.entropy.Utils.TileMapHelper;
@@ -39,6 +40,10 @@ import com.mygdx.entropy.Objects.Items.Threads;
 
 public class GScreen extends ScreenAdapter {
 
+    private ExtendViewport viewport;
+    private final float WORLD_WIDTH = 1920; // Replace with your desired world width
+    private final float WORLD_HEIGHT = 1080;
+
     // Box2D
     private World world;
     private Box2DDebugRenderer box2dDebugRenderer;
@@ -52,8 +57,12 @@ public class GScreen extends ScreenAdapter {
     private TextureAtlas atlas;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    private Music music, ambience;
-    private Sound lightSound, grab, scream, crowSound;
+    public static Music music;
+    public static Music ambience, scream;
+    private Sound lightSound, grab, crowSound;
+    private boolean playedScream = false;
+    long soundId;
+
     private PointLight light;
     private Texture crowInv, buttonInv, needleInv, crayonsInv, threadsInv, pictureFrameInv;
 
@@ -69,7 +78,8 @@ public class GScreen extends ScreenAdapter {
     private Crow crow;
 
     public GScreen(OrthographicCamera camera) {
-
+        
+        viewport = new ExtendViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         this.camera = camera;
         this.batch = new SpriteBatch();
         
@@ -111,44 +121,69 @@ public class GScreen extends ScreenAdapter {
         enemy.startTrackingPlayer(playerPos);
 
         // Audio
-        this.music = Gdx.audio.newMusic(Gdx.files.internal("audio/music_box.wav"));
-        this.ambience = Gdx.audio.newMusic(Gdx.files.internal("audio/ambience.mp3"));
+        GScreen.music = Gdx.audio.newMusic(Gdx.files.internal("audio/music_box.wav"));
+        GScreen.ambience = Gdx.audio.newMusic(Gdx.files.internal("audio/ambience.mp3"));
         lightSound = Gdx.audio.newSound(Gdx.files.internal("audio/matchStick.mp3"));
-        
+        scream = Gdx.audio.newMusic(Gdx.files.internal("audio/screaming.mp3"));
         grab = Gdx.audio.newSound(Gdx.files.internal("audio/grab.mp3"));
         crowSound = Gdx.audio.newSound(Gdx.files.internal("audio/crow.mp3"));
 
         music.setLooping(true);
         ambience.setLooping(true);
         music.setVolume(0.5f);
-        ambience.setVolume(0.5f);
+        scream.setVolume(0.5f);
+        ambience.setVolume(0.2f);
         ambience.play();
         crowSound.play();
-        // music.play();
+        music.play();
     }
 
     private void update() {
         world.step(1 / 60f, 6, 2);
         cameraUpdate();
-
+    
         light.setPosition(player.getBody().getPosition().x * Constants.PPM, player.getBody().getPosition().y * Constants.PPM);
-
+    
         toggleLight(light);
-
+    
         batch.setProjectionMatrix(camera.combined);
         orthogonalTiledMapRenderer.setView(camera);
         player.update();
         
         enemy.update();
 
+        
+    
+        float dist = player.getBody().getPosition().dst(enemy.getBody().getPosition());
+
+        if (dist < 5f) {
+            if (!playedScream) {
+                scream.setVolume(0.5f); // Set default volume
+                scream.play();
+                playedScream = true;
+            }
+        } else if (dist > 5f && dist <= 15f) {
+            float maxVolume = 0.5f; 
+
+            float distanceThreshold = 5.0f; 
+            float volume = maxVolume - Math.max(0, Math.min(maxVolume, (dist - distanceThreshold) / 10.0f));
+            scream.setVolume(volume);
+        } else {
+            if (playedScream) {
+                scream.stop();
+                playedScream = false;
+            }
+        }
+
+    
         if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
         }
-
+    
         if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
             renderDebug = !renderDebug;
         }
-    }
+    }  
 
     private void cameraUpdate() {
         Vector3 position = camera.position;
@@ -363,6 +398,10 @@ public class GScreen extends ScreenAdapter {
         }
     }
 
+    public void triggerJumpscare() {
+        // Show jumpscare image/animation
+      }
+
     public TextureAtlas getAtlas() {
         return atlas;
     }
@@ -424,6 +463,11 @@ public class GScreen extends ScreenAdapter {
             }
         }
     }
+
+    @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height);
+    }
     
     @Override
     public void dispose() {
@@ -451,7 +495,20 @@ public class GScreen extends ScreenAdapter {
         crayons.dispose();
         button.dispose();
         lightSound.dispose();
+        scream.dispose();
         grab.dispose();
-        super.dispose();    
+        super.dispose();
+        if (atlas != null) {
+            atlas.dispose();
+        }
+        if (rayHandler != null) {
+            rayHandler.dispose();
+        }
+        if (light != null) {
+            light.dispose();
+        }
+        if (box2dDebugRenderer != null) {
+            box2dDebugRenderer.dispose();
+        }                
     }
 }
