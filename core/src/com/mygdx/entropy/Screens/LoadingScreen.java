@@ -50,30 +50,33 @@ public class LoadingScreen implements Screen{
 
     @Override
     public void render(float delta) {
-        
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         update(delta);
 
+        // Set the viewport
+        entropy.camera.position.set(Entropy.V_WIDTH / 2f, Entropy.V_HEIGHT / 2f, 0); // Center the camera
+        entropy.camera.update();
+        shapeRenderer.setProjectionMatrix(entropy.camera.combined);
 
         shapeRenderer.begin(ShapeType.Filled);
 
-        float rectWidth = entropy.camera.viewportWidth - 240;
-        float rectHeight = 8;
-        float rectX = (entropy.camera.viewportWidth + rectWidth) / 2; 
-        float rectY = entropy.camera.viewportHeight / 2 - 16; 
+        float rectWidth = entropy.camera.viewportWidth / 3;
+        float rectHeight = 5;
+        float centerX = (entropy.camera.viewportWidth - rectWidth) / 2;
+        float rectY = entropy.camera.viewportHeight / 3;
 
         shapeRenderer.setColor(Color.GRAY);
-        shapeRenderer.rect(rectX, rectY, rectWidth, rectHeight);
+        shapeRenderer.rect(centerX, rectY, rectWidth, rectHeight);
 
         float progressWidth = progress * rectWidth;
 
         shapeRenderer.setColor(Color.valueOf(Constants.color));
-        shapeRenderer.rect(rectX, rectY, progressWidth, rectHeight);
+        shapeRenderer.rect(centerX, rectY, progressWidth, rectHeight);
 
         shapeRenderer.end();
-
+    
         // entropy.batch.begin();
         // entropy.font.draw(entropy.batch, "SCREEN: LOAD", 120, 120);
         // entropy.batch.end();
