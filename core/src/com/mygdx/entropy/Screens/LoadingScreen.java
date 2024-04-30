@@ -44,7 +44,6 @@ public class LoadingScreen implements Screen{
         if(entropy.assets.update() && progress >= entropy.assets.getProgress() - .001f){
             entropy.setScreen(entropy.splashScreen);
         }
-
         
     }
 

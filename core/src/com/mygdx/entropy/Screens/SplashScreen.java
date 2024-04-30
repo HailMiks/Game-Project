@@ -2,8 +2,12 @@ package com.mygdx.entropy.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.mygdx.entropy.Entropy;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -15,13 +19,15 @@ public class SplashScreen implements Screen {
 
     private final Entropy entropy;
     private Stage stage;
-    
-
+    private BitmapFont font;
     private Image splashImg;
+    private SpriteBatch batch;
+
 
     public SplashScreen(final Entropy entropy){
         this.entropy = entropy;
         this.stage = new Stage(new FitViewport(Entropy.V_WIDTH, Entropy.V_HEIGHT, entropy.camera));   
+        this.batch = new SpriteBatch(); 
     }
 
     @Override
@@ -57,11 +63,21 @@ public class SplashScreen implements Screen {
         update(delta);
 
         stage.draw();
+        font = new BitmapFont(); 
+        font.getData().setScale(1f);
+        font.setColor(Color.WHITE);
 
-        // entropy.batch.begin();
-        // entropy.font.draw(entropy.batch, "SCREEN: SPLASH", 120, 120);
-        // entropy.batch.end();
-        
+        batch.setProjectionMatrix(entropy.camera.combined); 
+
+        batch.begin();
+        GlyphLayout layout = new GlyphLayout(font, "This game contains violence and gore, and can cause fear, depression,"); // Compute the layout
+        float textX = (stage.getWidth() - layout.width) / 2; 
+        float textY = stage.getHeight() / 2 + layout.height - 250; 
+        font.draw(batch, "This game contains violence and gore, and can cause fear, depression,", textX, textY);
+        layout.setText(font, "heart failure and suicide. Users and viewers discretion is advised.");
+        textX = (stage.getWidth() - layout.width) / 2; 
+        font.draw(batch, "heart failure and suicide. Users and viewers discretion is advised.", textX, textY - layout.height - 5);
+        batch.end();
     }
 
     public void update(float delta) {
@@ -91,6 +107,8 @@ public class SplashScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        batch.dispose();
+        font.dispose();
     }
 
 }
