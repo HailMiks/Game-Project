@@ -329,7 +329,7 @@ public class GScreen extends ScreenAdapter {
         if (inventory.size() == 6) {
             timer += Gdx.graphics.getDeltaTime(); 
             if (timer < displayDuration) {
-                font.draw(batch, "And now... to put him back together... I have to go back...", centerX, playerY + 22, 0, Align.center, false);
+                font.draw(batch, "And now... to put him back together... I have to go back.", centerX, playerY + 22, 0, Align.center, false);
             }
         }
         
