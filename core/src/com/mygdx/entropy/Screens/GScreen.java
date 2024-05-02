@@ -91,9 +91,10 @@ public class GScreen extends ScreenAdapter {
     private boolean pictureFramePicked = false;
     private boolean esubaTexture = true;
     boolean esubaKey = false;
-    float displayDuration = 5.0f; 
+    float displayDuration = 10.0f; 
     float elapsedTime = 0.0f;
     float timeElapsed = 0.0f;
+    float timer = 0.0f;
     float itempickTime = 0.0f;
 
     public GScreen(OrthographicCamera camera) {
@@ -183,12 +184,12 @@ public class GScreen extends ScreenAdapter {
 
         if (dist < 5f) {
             if (!playedScream) {
-                scream.setVolume(0.5f);
+                scream.setVolume(0.25f);
                 scream.play();
                 playedScream = true;
             }
         } else if (dist > 5f && dist <= 15f) {
-            float maxVolume = 0.5f; 
+            float maxVolume = 0.25f; 
             float distanceThreshold = 5.0f; 
             float volume = maxVolume - Math.max(0, Math.min(maxVolume, (dist - distanceThreshold) / 10.0f));
             scream.setVolume(volume);
@@ -321,9 +322,17 @@ public class GScreen extends ScreenAdapter {
         timeElapsed += Gdx.graphics.getDeltaTime(); 
         if (timeElapsed < displayDuration) {
             font.setColor(Color.WHITE);
-            font.draw(batch, "Press (E) to interact | Press (F) to turn off your light", centerX, playerY - 14, 0, Align.center, false);
-            font.draw(batch, "Collect 6 ITEMS", centerX, playerY - 22, 0, Align.center, false);
+            font.draw(batch, "Press (E) to interact | Press (F) to turn toggle light (Avoid Enemy Detection)", centerX, playerY - 14, 0, Align.center, false);
+            font.draw(batch, "Goal: Find and Collect 6 Special ITEMS and Return here.", centerX, playerY - 22, 0, Align.center, false);
         }
+
+        if (inventory.size() == 6) {
+            timer += Gdx.graphics.getDeltaTime(); 
+            if (timer < displayDuration) {
+                font.draw(batch, "And now... to put him back together... I have to go back...", centerX, playerY + 22, 0, Align.center, false);
+            }
+        }
+        
         batch.end(); 
 
         batch.begin(); 
