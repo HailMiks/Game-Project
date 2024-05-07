@@ -62,7 +62,7 @@ public class GScreen extends ScreenAdapter {
     private TextureAtlas atlas;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    public static Music music, ambience, scream;
+    public static Music music, ambience, scream, dialogue;
     private Sound lightSound, grab, crowSound, jumpScareSound;
     private boolean playedScream = false, jumpScareSoundPlayed = false;
     long soundId;
@@ -90,6 +90,7 @@ public class GScreen extends ScreenAdapter {
     private boolean crayonsPicked = false;
     private boolean pictureFramePicked = false;
     private boolean esubaTexture = true;
+    private boolean dialogueStart = true;
     boolean esubaKey = false;
     float displayDuration = 10.0f; 
     float elapsedTime = 0.0f;
@@ -152,14 +153,16 @@ public class GScreen extends ScreenAdapter {
         grab = Gdx.audio.newSound(Gdx.files.internal("audio/grab.mp3"));
         crowSound = Gdx.audio.newSound(Gdx.files.internal("audio/crow.mp3"));
         jumpScareSound = Gdx.audio.newSound(Gdx.files.internal("audio/jumpscareAudio.mp3"));
+        dialogue = Gdx.audio.newMusic(Gdx.files.internal("audio/dialogue.mp3"));
 
         music.setLooping(true);
-        ambience.setLooping(true);
         music.setVolume(0.5f);
         scream.setVolume(0.5f);
         scream.setLooping(true);
         ambience.setVolume(0.2f);
+        ambience.setLooping(true);
         ambience.play();
+        dialogue.setVolume(0.5f);
         crowSound.play();
         music.play();
     }
@@ -241,12 +244,14 @@ public class GScreen extends ScreenAdapter {
         float playerX = player.getBody().getPosition().x * Constants.PPM - (playerAnimation.getRegionWidth() / 2);
         float playerY = player.getBody().getPosition().y * Constants.PPM - (playerAnimation.getRegionHeight() - 28 / 2);
         float offSet = 65;
+        float centerX = playerX + (playerAnimation.getRegionWidth() / 2);
         float enemyScaleX = 0.35f;
         float enemyScaleY = 0.35f;
 
         renderItems();
         
-        if (!esubaTexture) {
+        if (!dialogueStart && !dialogue.isPlaying()) {
+            esubaTexture = false;
             TextureRegion dadTexture = esuba.getDadTexture();
             float scale = 1f; 
             float width = dadTexture.getRegionWidth() * scale;
@@ -254,6 +259,8 @@ public class GScreen extends ScreenAdapter {
             batch.draw(dadTexture, 
                 esuba.getBody().getPosition().x * Constants.PPM - (dadTexture.getRegionWidth() / 2), 
                 esuba.getBody().getPosition().y * Constants.PPM - (dadTexture.getRegionHeight() / 2), width, height);
+
+                font.draw(batch, "Dad... Why didn't you just love me. I'm sorry...", centerX, playerY + 22, 0, Align.center, false);
         }
 
         batch.draw(playerAnimation, playerX, playerY);
@@ -316,7 +323,6 @@ public class GScreen extends ScreenAdapter {
 
         font = new BitmapFont(); 
         font.getData().setScale(0.3f);
-        float centerX = playerX + (playerAnimation.getRegionWidth() / 2);
 
         batch.begin(); 
         timeElapsed += Gdx.graphics.getDeltaTime(); 
@@ -383,6 +389,12 @@ public class GScreen extends ScreenAdapter {
                 Gdx.app.exit(); // Exit the game
             }
         }
+
+        if(!esubaTexture) {
+            font.setColor(Color.valueOf(Constants.color));
+            font.draw(batch, "From order to chaos; From love to hate, Entropy.", centerX, playerY - 14, 0, Align.center, false);
+            font.draw(batch, "Fin.", centerX, playerY - 22, 0, Align.center, false);
+        }
         batch.end(); 
     }
     
@@ -444,12 +456,8 @@ public class GScreen extends ScreenAdapter {
                 font.draw(batch, "I've only found " + inventory.size() + " things so far...", centerX, playerY + 30, 0, Align.center, false);
                 font.draw(batch, "But I'm not giving up!  There's only " + (6 - inventory.size()) + " more to go!.", centerX, playerY + 22, 0, Align.center, false);
             } else if (inventory.size() == 6) {
-                font.draw(batch, "Dad...", centerX, playerY + 22, 0, Align.center, false);
-                
-                font.setColor(Color.valueOf(Constants.color));
-                font.draw(batch, "From order to chaos; From love to hate, Entropy.", centerX, playerY - 14, 0, Align.center, false);
-                font.draw(batch, "Fin.", centerX, playerY - 22, 0, Align.center, false);
-                esubaTexture = false;
+                dialogue.play();
+                dialogueStart = false;
             }
             elapsedTime += Gdx.graphics.getDeltaTime(); 
             if (elapsedTime >= displayDuration) {
